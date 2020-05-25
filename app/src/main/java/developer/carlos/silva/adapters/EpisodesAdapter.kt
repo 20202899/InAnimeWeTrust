@@ -42,8 +42,10 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return ItemViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.new_episode_item_list_view, parent,
-                false)
+            LayoutInflater.from(parent.context).inflate(
+                R.layout.new_episode_item_list_view, parent,
+                false
+            )
         )
     }
 
@@ -63,10 +65,10 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 Thread {
                     val doc = Jsoup.connect(anime.link).get()
                     val scripts = doc.select("script")
-                    val script = scripts[15]
+                    val script = scripts.find { it.toString().contains("sources:") }.toString()
                     val type = object : TypeToken<MutableList<Player>>() {}.type
                     val result = Utils.uncodedScriptText<MutableList<Player>>(
-                        script.data(),
+                        script,
                         type
                     )
 

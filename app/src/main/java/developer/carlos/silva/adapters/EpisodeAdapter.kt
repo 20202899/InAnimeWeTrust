@@ -47,7 +47,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun getItemViewType(position: Int): Int {
         return if (position == 0) {
             0
-        }else {
+        } else {
             1
         }
     }
@@ -58,10 +58,11 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.new_episode_item_view, parent, false)
             )
-        }else {
+        } else {
             HeaderViewHolder(
                 LayoutInflater.from(parent.context)
-                    .inflate(R.layout.new_episode_header_view, parent, false))
+                    .inflate(R.layout.new_episode_header_view, parent, false)
+            )
         }
     }
 
@@ -73,7 +74,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
             if (mActivity.getIds().contains(anime.videoId)) {
                 holder.cardview.setCardBackgroundColor(RGB_COLOR_TEXT)
-            }else {
+            } else {
                 holder.cardview.setCardBackgroundColor(RGB_COLOR_DOMINANT)
             }
 
@@ -90,10 +91,10 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 Thread {
                     val doc = Jsoup.connect(anime.link).get()
                     val scripts = doc.select("script")
-                    val script = scripts[15]
+                    val script = scripts.find { it.toString().contains("sources:") }.toString()
                     val type = object : TypeToken<MutableList<Player>>() {}.type
                     val result = Utils.uncodedScriptText<MutableList<Player>>(
-                        script.data(),
+                        script,
                         type
                     )
 
@@ -123,7 +124,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 }.start()
             }
 
-        }else {
+        } else {
             val newHolder = holder as HeaderViewHolder
             Glide.with(mActivity)
                 .asBitmap()
