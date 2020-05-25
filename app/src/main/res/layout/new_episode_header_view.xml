@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/transparent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <androidx.cardview.widget.CardView
+        app:cardUseCompatPadding="true"
+        app:cardElevation="4dp"
+        android:layout_centerInParent="true"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/img"
+            android:src="@drawable/gleipnir_episodios"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"
+            android:layout_height="180dp"
+            android:layout_width="130dp"/>
+    </androidx.cardview.widget.CardView>
+</RelativeLayout>
