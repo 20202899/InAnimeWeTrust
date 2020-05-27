@@ -16,5 +16,7 @@ class Utils {
             val endless = result.substring(nowIndex, nowLastIndex+1)
             return gson.fromJson(endless, type)
         }
+
+        fun getDigitFromString (s: String) = "\\d+".toRegex().find(s)!!.groupValues[0].toInt()
     }
 }

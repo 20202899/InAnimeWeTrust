@@ -1,6 +1,9 @@
 package developer.carlos.silva.adapters
 
+import android.animation.ObjectAnimator
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.Log
 import android.view.Gravity
@@ -18,6 +21,7 @@ import androidx.transition.ChangeBounds
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
 import com.google.gson.reflect.TypeToken
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.MainActivity
@@ -32,6 +36,7 @@ import org.jsoup.Jsoup
 
 class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    private var lastIndexAnimation: Int = -1
     private var items = mutableListOf<Any>()
     lateinit var mEpisodesFragment: EpisodesFragment
 
@@ -76,7 +81,7 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         val dialog = AlertDialog.Builder(mEpisodesFragment.context!!)
                             .setTitle(anime.title)
                             .setItems(result.map { it.label }
-                                .toTypedArray()) { dialogInterface, i ->
+                                .toTypedArray()) { _, i ->
                                 val intent = Intent(Intent.ACTION_VIEW)
                                 intent.setDataAndType(
                                     Uri.parse(result[i].file),
@@ -99,8 +104,31 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
 
             Glide.with(holder.itemView.context)
+                .asBitmap()
                 .load(anime.imagePath)
-                .into(holder.image)
+                .into(object : CustomTarget<Bitmap>() {
+                    override fun onLoadCleared(placeholder: Drawable?) {
+                        Log.DEBUG
+                    }
+
+                    override fun onResourceReady(
+                        resource: Bitmap,
+                        transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
+                    ) {
+                        holder.image.setImageBitmap(resource)
+                        if (position > lastIndexAnimation) {
+                            val objectAnimator = ObjectAnimator.ofFloat(holder.itemView,
+                                "translationX", -1500f, 0f)
+
+                            objectAnimator.interpolator = AccelerateDecelerateInterpolator()
+                            objectAnimator.duration = 600
+                            objectAnimator.start()
+                            holder.itemView.visibility = CardView.VISIBLE
+                            lastIndexAnimation = position
+                        }
+                    }
+
+                })
         }
     }
 

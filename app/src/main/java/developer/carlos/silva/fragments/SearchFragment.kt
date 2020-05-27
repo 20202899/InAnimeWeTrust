@@ -9,13 +9,16 @@ import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.adapters.SearchAdapter
 import developer.carlos.silva.interfaces.AnimeLoaderListener
 import developer.carlos.silva.network.LoaderAnimes
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.calendar_fragment.*
 import kotlinx.android.synthetic.main.search_fragment.*
+import kotlinx.android.synthetic.main.search_fragment.recyclerview
 
 
 class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
@@ -43,21 +46,33 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
         closeButton.setOnClickListener {
             mMainActivity.hideKeyboard()
             val et =  mMainActivity.search_view.findViewById(R.id.search_src_text) as EditText
-
-            //Clear the text from EditText view
-
-            //Clear the text from EditText view
             et.setText("")
+
+            mAdapter.clean()
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerview.setHasFixedSize(true)
+
+        val mainActivity = activity as MainActivity
         val gridLayoutManager = GridLayoutManager(
             context, 2,
             GridLayoutManager.VERTICAL, false
         )
+
+        recyclerview.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (dy > 0 && mainActivity.bottomview.isShowing()) {
+                    mainActivity.bottomview.hide()
+                }else if(dy <= 0 && !mainActivity.bottomview.isShowing()) {
+                    mainActivity.bottomview.show()
+                }
+            }
+        })
+
+        recyclerview.setHasFixedSize(true)
 
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup () {
             override fun getSpanSize(position: Int): Int {

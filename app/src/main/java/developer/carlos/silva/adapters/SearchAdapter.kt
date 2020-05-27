@@ -54,6 +54,11 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         }
     }
 
+    fun clean() {
+        items.clear()
+        notifyDataSetChanged()
+    }
+
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var img = itemView.findViewById<ImageView>(R.id.img)
         var text1 = itemView.findViewById<TextView>(android.R.id.text1)

@@ -71,6 +71,7 @@ class EpisodesFragment : Fragment() {
         }
 
         mainActivity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        mainActivity.toolbar_layout.title = "Episódios"
         mainActivity.toolbar.show()
 
         recyclerview.addOnScrollListener(object : RecyclerView.OnScrollListener() {

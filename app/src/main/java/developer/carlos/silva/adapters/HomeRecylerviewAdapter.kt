@@ -1,6 +1,5 @@
 package developer.carlos.silva.adapters
 
-import android.animation.ObjectAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
@@ -9,28 +8,27 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AnimationUtils
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.ChangeBounds
 import androidx.transition.Slide
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target.SIZE_ORIGINAL
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
 import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.dialogs.LoadDialog
+import developer.carlos.silva.fragments.CalendarFragment
 import developer.carlos.silva.fragments.EpisodesFragment
 import developer.carlos.silva.fragments.HomeFragment
 import developer.carlos.silva.models.Anime
@@ -176,6 +174,19 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 }
             }
 
+            if (position == 6) {
+                holder.textView2.setOnClickListener {
+                    (mHomeFragment?.activity as MainActivity?)
+                        ?.app_bar?.setExpanded(true, true)
+                    val transaction = mHomeFragment?.fragmentManager!!.beginTransaction()
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    transaction
+                        .add(R.id.container_main, CalendarFragment.newInstance())
+                        .addToBackStack(null)
+                        .commit()
+                }
+            }
+
             if (item == "Tendência") {
                 header.textView1.text = item
                 header.textView2.visibility = TextView.INVISIBLE
@@ -183,6 +194,9 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 header.textView1.text = item
                 holder.textView2.text = "Ver Calendário"
                 header.textView2.visibility = TextView.VISIBLE
+            } else if (item == "Recentes") {
+                header.textView1.text = item
+                header.textView2.visibility = TextView.INVISIBLE
             } else {
                 header.textView1.text = item
                 header.textView2.visibility = TextView.VISIBLE
@@ -368,6 +382,11 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
                     Glide.with(holder.itemView.context)
                         .load(anime.imagePath)
+                        .apply(
+                            RequestOptions()
+                                .override(SIZE_ORIGINAL)
+                                .format(DecodeFormat.PREFER_ARGB_8888)
+                        )
                         .into(holder.img)
 
                     holder.next.setOnClickListener {

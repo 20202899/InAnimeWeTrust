@@ -15,10 +15,7 @@ import developer.carlos.silva.R
 import developer.carlos.silva.adapters.FragmentAdapter
 import developer.carlos.silva.extensions.hide
 import developer.carlos.silva.extensions.show
-import developer.carlos.silva.fragments.EpisodesFragment
-import developer.carlos.silva.fragments.FavoriteFragment
-import developer.carlos.silva.fragments.HomeFragment
-import developer.carlos.silva.fragments.SearchFragment
+import developer.carlos.silva.fragments.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -38,22 +35,30 @@ class MainActivity : AppCompatActivity() {
         bottomview.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.home_id -> {
-
-                    if (supportFragmentManager.findFragmentById(R.id.container_main)
-                                is EpisodesFragment
+                    toolbar_layout.isTitleEnabled = true
+                    if (supportFragmentManager.findFragmentById(R.id.container_main) is EpisodesFragment || supportFragmentManager.findFragmentById(
+                            R.id.container_main
+                        ) is CalendarFragment
                     ) {
+                        val result = supportFragmentManager.fragments.last() is CalendarFragment
+
+                        if (result) {
+                            toolbar_layout.title = "Calendário"
+                        } else {
+                            toolbar_layout.title = "Episódios"
+                        }
                         supportActionBar?.setDisplayHomeAsUpEnabled(true)
                         toolbar.show()
+                    } else {
+                        toolbar_layout.title = getString(R.string.app_name)
                     }
 
                     viewpager.currentItem = 0
                     search_view.visibility = SearchView.GONE
-                    toolbar_layout.isTitleEnabled = true
-                    title = getString(R.string.app_name)
                 }
 
                 R.id.search_id -> {
-                    toolbar.hide().addListener(object : Animator.AnimatorListener{
+                    toolbar.hide().addListener(object : Animator.AnimatorListener {
                         override fun onAnimationRepeat(animation: Animator?) {
 
                         }
@@ -81,7 +86,7 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.favorite_id -> {
 
-                    toolbar.hide().addListener(object : Animator.AnimatorListener{
+                    toolbar.hide().addListener(object : Animator.AnimatorListener {
                         override fun onAnimationRepeat(animation: Animator?) {
 
                         }
@@ -101,7 +106,8 @@ class MainActivity : AppCompatActivity() {
                     })
 
                     search_view.visibility = SearchView.GONE
-                    title = getString(R.string.app_name)
+                    toolbar_layout.isTitleEnabled = true
+                    toolbar_layout.title = "Favoritos"
                     viewpager.currentItem = 2
                 }
             }
@@ -130,8 +136,9 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_settings -> true
             android.R.id.home -> {
+                toolbar_layout.title = getString(R.string.app_name)
                 supportFragmentManager.popBackStack()
-                toolbar.hide().addListener(object : Animator.AnimatorListener{
+                toolbar.hide().addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
 
                     }
@@ -157,20 +164,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (supportFragmentManager.findFragmentById(R.id.container_main) !is EpisodesFragment &&
-            viewpager.currentItem == 0) {
-            super.onBackPressed()
-        }else if (supportFragmentManager.findFragmentById(R.id.container_main) !is EpisodesFragment
-            && viewpager.currentItem > 0) {
-            bottomview.selectedItemId = R.id.home_id
-            viewpager.currentItem = 0
-        }else if(supportFragmentManager.findFragmentById(R.id.container_main) is EpisodesFragment &&
-            viewpager.currentItem > 0) {
-            bottomview.selectedItemId = R.id.home_id
-            viewpager.currentItem = 0
-        }else {
-            supportFragmentManager.popBackStack()
-            toolbar.hide().addListener(object : Animator.AnimatorListener{
+        if ((supportFragmentManager.findFragmentById(R.id.container_main) !is EpisodesFragment || supportFragmentManager.findFragmentById(
+                R.id.container_main
+            ) !is CalendarFragment) &&
+            viewpager.currentItem == 0
+        ) {
+            toolbar_layout.title = getString(R.string.app_name)
+            toolbar.hide().addListener(object : Animator.AnimatorListener {
                 override fun onAnimationRepeat(animation: Animator?) {
 
                 }
@@ -188,6 +188,25 @@ class MainActivity : AppCompatActivity() {
                 }
 
             })
+
+            super.onBackPressed()
+
+        } else if ((supportFragmentManager.findFragmentById(R.id.container_main) !is EpisodesFragment || supportFragmentManager.findFragmentById(
+                R.id.container_main
+            ) !is CalendarFragment)
+            && viewpager.currentItem > 0
+        ) {
+
+            bottomview.selectedItemId = R.id.home_id
+//            viewpager.currentItem = 0
+        } else if ((supportFragmentManager.findFragmentById(R.id.container_main) is EpisodesFragment || supportFragmentManager.findFragmentById(
+                R.id.container_main
+            ) is CalendarFragment) &&
+            viewpager.currentItem > 0
+        ) {
+            bottomview.selectedItemId = R.id.home_id
+        } else {
+            super.onBackPressed()
         }
     }
 

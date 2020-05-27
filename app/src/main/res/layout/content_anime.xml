@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/recyclerview"
     app:layout_anchor="@+id/app_bar"
     app:behavior_overlapTop="95dp"
     android:elevation="15dp"
@@ -11,4 +10,19 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activities.AnimeActivity"
-    tools:showIn="@layout/activity_anime"/>
+    tools:showIn="@layout/activity_anime">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:visibility="invisible"
+        android:id="@+id/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:layout_gravity="center"
+        android:id="@+id/progressbar"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</FrameLayout>

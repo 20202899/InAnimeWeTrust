@@ -1,12 +1,12 @@
 package developer.carlos.silva.network
 
-import android.os.Handler
-import android.util.Log
-import com.android.volley.Request
-import com.android.volley.toolbox.StringRequest
 import developer.carlos.silva.interfaces.AnimeLoaderListener
+import developer.carlos.silva.interfaces.AnimeLoaderStringListener
 import developer.carlos.silva.models.Anime
+import developer.carlos.silva.database.models.DataAnime
+import developer.carlos.silva.database.models.DataEpisode
 import developer.carlos.silva.singletons.MainController
+import developer.carlos.silva.utils.Utils
 import org.jsoup.Jsoup
 
 class LoaderAnimes {
@@ -42,11 +42,31 @@ class LoaderAnimes {
         fun loadAnimes(animeLoaderListener: AnimeLoaderListener?, link: String) {
             Thread {
                 val doc = Jsoup.connect(link).get()
+                val sinopse = doc.select("#sinopse2").first()?.text() ?: ""
+                val capaAnime = doc.select("#capaAnime")
+                val img = capaAnime.select("img")
+                val capaLink = img.attr("src").toString()
                 val pagAniListaContainer = doc.select(".pagAniListaContainer ")
                 val epiSubContainer = pagAniListaContainer.select("a")
-                val list = epiSubContainer.map { Anime(it) }.toMutableList<Any>()
+                val videoId = Utils.getDigitFromString(link)
+                val list = epiSubContainer.map { Anime(it) }
+                    .map { element ->
+                        DataEpisode(
+                            id = element.videoId,
+                            foreignKey = videoId,
+                            link = element.link,
+                            title = element.title
+                        )
+                    }.toMutableList()
+
+                val objt = DataAnime()
+                objt.id = videoId
+                objt.lista = list
+                objt.capa = capaLink
+                objt.sinopse = sinopse.toString()
+
                 MainController.getInstance()?.getHandler()?.post {
-                    animeLoaderListener?.onLoad(list)
+                    animeLoaderListener?.onLoad(mutableListOf(objt))
                 }
             }.start()
         }
@@ -75,7 +95,10 @@ class LoaderAnimes {
             }.start()
         }
 
-        fun loadEpisodes(animeLoaderListener: AnimeLoaderListener?, url: String = UrlSystem.episodes()) {
+        fun loadEpisodes(
+            animeLoaderListener: AnimeLoaderListener?,
+            url: String = UrlSystem.episodes()
+        ) {
             Thread {
                 val doc = Jsoup.connect(url).get()
                 val episodiosPagContainer = doc.select(".episodiosPagContainer")
@@ -87,7 +110,10 @@ class LoaderAnimes {
             }.start()
         }
 
-        fun pagination(animeLoaderListener: AnimeLoaderListener?, url: String = UrlSystem.episodes()) {
+        fun pagination(
+            animeLoaderListener: AnimeLoaderListener?,
+            url: String = UrlSystem.episodes()
+        ) {
             Thread {
                 val doc = Jsoup.connect(url).get()
                 val centerPagination = doc.select(".centerPagination")
@@ -96,6 +122,47 @@ class LoaderAnimes {
                 val list = epiSubContainer.map { Anime(it) }.toMutableList<Any>()
                 MainController.getInstance()?.getHandler()?.post {
                     animeLoaderListener?.onLoad(list)
+                }
+            }.start()
+        }
+
+        fun loadCalendar(animeLoaderListener: AnimeLoaderListener?) {
+            var count = 0
+            Thread {
+                val list = mutableListOf<Any>()
+                val titles = mutableListOf(
+                    "SEGUNDA",
+                    "TERÇA",
+                    "QUARTA",
+                    "QUINTA",
+                    "SEXTA",
+                    "SÁBADO",
+                    "DOMINGO"
+                )
+                val doc = Jsoup.connect(UrlSystem.calendar()).get()
+                val mwidth = doc.select(".mwidth")
+                val calendarioPagContainer = mwidth.select(".calendarioPagContainer")
+
+                calendarioPagContainer.forEach {
+                    list.add(titles[count])
+                    list.addAll(it.select(".aniItemList").map { element -> Anime(element) })
+                    count++
+                }
+
+                MainController.getInstance()?.getHandler()?.post {
+                    animeLoaderListener?.onLoad(list)
+                }
+            }.start()
+        }
+
+        fun loadCapa(animeLoaderStringListener: AnimeLoaderStringListener?, url: String) {
+            val doc = Jsoup.connect(url).get()
+            val capaAnime = doc.select("#capaAnime")
+            val img = capaAnime.select("img")
+            val result = img.attr("src").toString()
+            Thread {
+                MainController.getInstance()?.getHandler()?.post {
+                    animeLoaderStringListener?.onLoad(result)
                 }
             }.start()
         }

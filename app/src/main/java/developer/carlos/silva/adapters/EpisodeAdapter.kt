@@ -1,5 +1,6 @@
 package developer.carlos.silva.adapters
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -8,16 +9,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.google.gson.reflect.TypeToken
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
+import developer.carlos.silva.database.models.DataEpisode
 import developer.carlos.silva.dialogs.LoadDialog
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.models.Player
@@ -31,6 +36,9 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var RGB_COLOR_DOMINANT = -1
     var RGB_COLOR_TEXT = -1
+    var RGB_DEFAULT_COLOR = R.color.colorPrimary
+    var lastIndexAnimation = -1
+    var isShow = false
 
     lateinit var mActivity: AnimeActivity
 
@@ -59,6 +67,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     .inflate(R.layout.new_episode_item_view, parent, false)
             )
         } else {
+
             HeaderViewHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.new_episode_header_view, parent, false)
@@ -70,19 +79,32 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is ItemViewHolder) {
-            var anime = items[position - 1] as Anime
+            var anime = items[position - 1] as DataEpisode
 
-            if (mActivity.getIds().contains(anime.videoId)) {
+            if (mActivity.getIds().contains(anime.id)) {
                 holder.cardview.setCardBackgroundColor(RGB_COLOR_TEXT)
-            } else {
-                holder.cardview.setCardBackgroundColor(RGB_COLOR_DOMINANT)
+            }else {
+                holder.cardview.setCardBackgroundColor(ContextCompat.getColor(mActivity, R.color.colorPrimary))
+            }
+
+            if (position > lastIndexAnimation) {
+                val objectAnimator = ObjectAnimator.ofFloat(
+                    holder.itemView,
+                    "translationX", -1500f, 0f
+                )
+
+                objectAnimator.interpolator = AccelerateDecelerateInterpolator()
+                objectAnimator.duration = 600
+                objectAnimator.start()
+                holder.itemView.visibility = CardView.VISIBLE
+                lastIndexAnimation = position
             }
 
             holder.text1.text = anime.title
 
             holder.itemView.setOnClickListener {
 
-                mActivity.saveSets(anime.videoId.toString())
+                mActivity.saveSets(anime.id.toString())
 
                 holder.cardview.setCardBackgroundColor(RGB_COLOR_TEXT)
 
@@ -131,15 +153,22 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 .load(IMG_PATH)
                 .into(object : CustomTarget<Bitmap>() {
                     override fun onLoadCleared(placeholder: Drawable?) {
-
+                        Log.DEBUG
                     }
 
                     override fun onResourceReady(
                         resource: Bitmap,
                         transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
                     ) {
-                        mActivity.createPalette(resource)
                         newHolder.image.setImageBitmap(resource)
+                        if (holder.itemView.visibility == CardView.GONE) {
+                            val animation =
+                                AnimationUtils.loadAnimation(mActivity, R.anim.scale_fade_in)
+                            animation.interpolator = AccelerateDecelerateInterpolator()
+                            animation.duration = 600
+                            holder.itemView.startAnimation(animation)
+                            holder.itemView.visibility = CardView.VISIBLE
+                        }
                     }
 
                 })
