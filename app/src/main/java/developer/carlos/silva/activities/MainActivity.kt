@@ -5,12 +5,14 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.appbar.CollapsingToolbarLayout
 import developer.carlos.silva.R
 import developer.carlos.silva.adapters.FragmentAdapter
 import developer.carlos.silva.extensions.hide
@@ -35,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         bottomview.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.home_id -> {
-                    toolbar_layout.isTitleEnabled = true
                     if (supportFragmentManager.findFragmentById(R.id.container_main) is EpisodesFragment || supportFragmentManager.findFragmentById(
                             R.id.container_main
                         ) is CalendarFragment
@@ -44,13 +45,17 @@ class MainActivity : AppCompatActivity() {
 
                         if (result) {
                             toolbar_layout.title = "Calendário"
+                            title = "Calendário"
                         } else {
                             toolbar_layout.title = "Episódios"
+                            title = "Episódios"
                         }
+
                         supportActionBar?.setDisplayHomeAsUpEnabled(true)
                         toolbar.show()
                     } else {
                         toolbar_layout.title = getString(R.string.app_name)
+//                        title = getString(R.string.app_name)
                     }
 
                     viewpager.currentItem = 0
@@ -78,8 +83,7 @@ class MainActivity : AppCompatActivity() {
                     })
                     viewpager.currentItem = 1
                     app_bar.setExpanded(true, true)
-                    search_view.visibility = SearchView.VISIBLE
-                    toolbar_layout.isTitleEnabled = true
+                    search_view.show()
                     toolbar_layout.title = ""
                     title = ""
                 }
@@ -106,11 +110,15 @@ class MainActivity : AppCompatActivity() {
                     })
 
                     search_view.visibility = SearchView.GONE
-                    toolbar_layout.isTitleEnabled = true
                     toolbar_layout.title = "Favoritos"
+//                    title = "Favoritos"
                     viewpager.currentItem = 2
                 }
             }
+
+            toolbar_layout.collapsedTitleGravity = Gravity.CENTER
+            toolbar_layout.expandedTitleGravity = Gravity.CENTER
+
             return@setOnNavigationItemSelectedListener true
         }
 
@@ -170,6 +178,7 @@ class MainActivity : AppCompatActivity() {
             viewpager.currentItem == 0
         ) {
             toolbar_layout.title = getString(R.string.app_name)
+            title = getString(R.string.app_name)
             toolbar.hide().addListener(object : Animator.AnimatorListener {
                 override fun onAnimationRepeat(animation: Animator?) {
 

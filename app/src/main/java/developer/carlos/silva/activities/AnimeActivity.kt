@@ -6,13 +6,12 @@ import android.graphics.Bitmap
 import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
-import android.view.animation.OvershootInterpolator
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,13 +20,16 @@ import com.google.gson.Gson
 import developer.carlos.silva.R
 import developer.carlos.silva.adapters.EpisodeAdapter
 import developer.carlos.silva.database.DatabaseServices
+import developer.carlos.silva.database.models.AnimeAndEpisodes
 import developer.carlos.silva.database.models.DataAnime
+import developer.carlos.silva.database.models.DataEpisode
 import developer.carlos.silva.extensions.addAnim
 import developer.carlos.silva.extensions.removeAnim
 import developer.carlos.silva.interfaces.AnimeLoaderListener
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.network.LoaderAnimes
 import developer.carlos.silva.singletons.MainController
+import developer.carlos.silva.utils.Utils
 import kotlinx.android.synthetic.main.activity_anime.*
 import kotlinx.android.synthetic.main.content_anime.*
 
@@ -37,7 +39,7 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
     private val mAdapter = EpisodeAdapter()
     private lateinit var mSharedPreferences: SharedPreferences
     var isLink = false
-    private lateinit var dataAnime: DataAnime
+    private var dataAnime: DataAnime? = null
     private val mGson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,53 +51,88 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
     }
 
     fun commomInit() {
-        val anime = intent.extras["data"] as Anime
-
         mSharedPreferences = getSharedPreferences("Sets", Context.MODE_PRIVATE)
 
+        val data = intent.extras["data"]
+        var listener: View.OnClickListener? = null
         recyclerview.setHasFixedSize(true)
         recyclerview.layoutManager = LinearLayoutManager(
             this,
             LinearLayoutManager.VERTICAL, false
         )
-
-        fab.setOnClickListener {
-            Thread {
-                val db = DatabaseServices.getDataBaseInstance(this)
-                val daoAnime = db.dataAnimeDao()
-
-                if (daoAnime.isExist(dataAnime.id) == null) {
-                    dataAnime.title = anime.title
-                    dataAnime.link = anime.link
-                    daoAnime.insertAnime(dataAnime)
-                    daoAnime.insertEpisode(dataAnime.lista)
-                    MainController.getInstance()?.getHandler()?.post {
-                        fab.removeAnim()
-                    }
-                } else {
-                    daoAnime.deleteById(dataAnime.id)
-                    MainController.getInstance()?.getHandler()?.post {
-                        fab.addAnim()
-                    }
-                }
-
-                db.close()
-            }.start()
-        }
-
-        mAdapter.RGB_COLOR_TEXT = ContextCompat.getColor(this, android.R.color.holo_red_dark)
+        recyclerview.adapter = mAdapter
 
         mAdapter.mActivity = this
 
-        isLink = anime.imagePath.isNotEmpty()
+        if (data is Anime) {
 
-//        mAdapter.IMG_PATH = anime.imagePath
+            isLink = data.imagePath.isNotEmpty()
+            title = data.title
 
-        recyclerview.adapter = mAdapter
+            LoaderAnimes.loadAnimes(this, data.link)
 
-        title = anime.title
+            listener = View.OnClickListener {
+                Thread {
+                    val db = DatabaseServices.getDataBaseInstance(this)
+                    val daoAnime = db.dataAnimeDao()
 
-        LoaderAnimes.loadAnimes(this, anime.link)
+                    if (daoAnime.isExist(dataAnime!!.id) == null) {
+                        dataAnime!!.title = data.title
+                        dataAnime!!.link = data.link
+                        daoAnime.insertAnime(dataAnime!!)
+                        daoAnime.insertEpisode(dataAnime!!.lista)
+                        MainController.getInstance()?.getHandler()?.post {
+                            fab.removeAnim()
+                        }
+                    } else {
+                        daoAnime.deleteById(dataAnime!!.id)
+                        MainController.getInstance()?.getHandler()?.post {
+                            fab.addAnim()
+                        }
+                    }
+
+                    db.close()
+                }.start()
+            }
+        }
+
+        if (data is AnimeAndEpisodes) {
+            dataAnime = data.dataAnime
+            isLink = dataAnime!!.capa.isNotEmpty()
+            title = dataAnime!!.title
+            mAdapter.IMG_PATH = dataAnime!!.capa
+            mAdapter.mDataAnime = dataAnime
+            isCheckAdded()
+            listener = View.OnClickListener {
+                Thread {
+                    val db = DatabaseServices.getDataBaseInstance(this)
+                    val daoAnime = db.dataAnimeDao()
+
+                    if (daoAnime.isExist(dataAnime!!.id) == null) {
+                        daoAnime.insertAnime(dataAnime!!)
+                        daoAnime.insertEpisode(dataAnime!!.lista)
+                        MainController.getInstance()?.getHandler()?.post {
+                            fab.removeAnim()
+                        }
+                    } else {
+                        daoAnime.deleteById(dataAnime!!.id)
+                        MainController.getInstance()?.getHandler()?.post {
+                            fab.addAnim()
+                        }
+                    }
+
+                    db.close()
+                }.start()
+            }
+            val eps = data.epsodes
+            mAdapter.addItems(eps.toMutableList())
+
+            progressbar.visibility = ProgressBar.GONE
+            recyclerview.visibility = RecyclerView.VISIBLE
+        }
+
+        fab.setOnClickListener(listener)
+        mAdapter.RGB_COLOR_TEXT = ContextCompat.getColor(this, android.R.color.holo_red_dark)
     }
 
     fun isCheckAdded() {
@@ -109,12 +146,12 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
             val db = DatabaseServices.getDataBaseInstance(this)
             val daoAnime = db.dataAnimeDao()
 
-            if (daoAnime.isExist(dataAnime.id) != null) {
+            if (daoAnime.isExist(dataAnime!!.id) != null) {
                 MainController.getInstance()?.getHandler()?.post {
                     fab.removeAnim()
                 }
             } else {
-                daoAnime.deleteById(dataAnime.id)
+                daoAnime.deleteById(dataAnime!!.id)
                 MainController.getInstance()?.getHandler()?.post {
                     fab.addAnim()
                 }
@@ -178,15 +215,21 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
     }
 
     override fun onLoad(data: MutableList<Any>) {
+
+        if (data.size <= 0)
+            return
+
         dataAnime = data[0] as DataAnime
+        dataAnime?.title = title.toString()
+        mAdapter.mDataAnime = dataAnime
 
         isCheckAdded()
 
         if (mAdapter.IMG_PATH.isNullOrEmpty()) {
-            mAdapter.IMG_PATH = dataAnime.capa
+            mAdapter.IMG_PATH = dataAnime!!.capa
         }
 
-        mAdapter.addItems(dataAnime.lista as MutableList<Any>)
+        mAdapter.addItems(dataAnime!!.lista as MutableList<Any>)
 
         progressbar.visibility = ProgressBar.GONE
         recyclerview.visibility = RecyclerView.VISIBLE

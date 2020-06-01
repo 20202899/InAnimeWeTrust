@@ -7,8 +7,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -57,22 +61,30 @@ class FavoriteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         resource: Bitmap,
                         transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
                     ) {
+
                         holder.image.setImageBitmap(resource)
+
+                        if (holder.itemView.visibility == CardView.GONE) {
+                            val animation = AnimationUtils.loadAnimation(
+                                holder.itemView.context,
+                                R.anim.transition_down_to_up
+                            )
+                            animation.interpolator = AccelerateDecelerateInterpolator()
+                            animation.duration = 600
+                            holder.itemView.startAnimation(animation)
+                            holder.itemView.visibility = LinearLayout.VISIBLE
+                        }
                     }
 
                 })
 
             holder.itemView.setOnClickListener {
-                val anime = Anime()
-                anime.imagePath = dataAnime.capa
-                anime.title = dataAnime.title
-                anime.link = dataAnime.link
                 val context = holder.itemView.context
                 val intent = Intent(
                     context, AnimeActivity::class.java
                 )
 
-                intent.putExtra("data", anime)
+                intent.putExtra("data", items[position])
                 context.startActivity(intent)
             }
         }

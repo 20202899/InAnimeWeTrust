@@ -24,10 +24,15 @@ import kotlinx.android.synthetic.main.search_fragment.recyclerview
 class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
 
     val mAdapter = SearchAdapter()
-    private lateinit var mMainActivity: MainActivity
+    private var mMainActivity: MainActivity? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mMainActivity?.hideKeyboard()
     }
 
     override fun onCreateView(
@@ -41,12 +46,12 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         mMainActivity = activity as MainActivity
-        mMainActivity.search_view.setOnQueryTextListener(this)
-        val closeButton: ImageView = mMainActivity.search_view.findViewById(R.id.search_close_btn) as ImageView
-        closeButton.setOnClickListener {
-            mMainActivity.hideKeyboard()
-            val et =  mMainActivity.search_view.findViewById(R.id.search_src_text) as EditText
-            et.setText("")
+        mMainActivity?.search_view?.setOnQueryTextListener(this)
+        val closeButton = mMainActivity?.search_view?.findViewById(R.id.search_close_btn) as ImageView?
+        closeButton?.setOnClickListener {
+            mMainActivity?.hideKeyboard()
+            val et =  mMainActivity?.search_view?.findViewById(R.id.search_src_text) as EditText?
+            et?.setText("")
 
             mAdapter.clean()
         }
@@ -60,6 +65,8 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
             context, 2,
             GridLayoutManager.VERTICAL, false
         )
+
+        swiperefresh.isEnabled = false
 
         recyclerview.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {

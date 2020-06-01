@@ -19,8 +19,8 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:elevation="0dp"
             app:elevation="0dp"
-            app:collapsedTitleGravity="center_horizontal"
-            app:expandedTitleGravity="center_horizontal"
+            app:collapsedTitleGravity="center"
+            app:expandedTitleGravity="center"
             android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -54,6 +54,16 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+<!--    <FrameLayout-->
+<!--        android:alpha="0.02"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+<!--        <ImageView-->
+<!--            android:scaleType="centerCrop"-->
+<!--            android:src="@drawable/background_image"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"/>-->
+<!--    </FrameLayout>-->
 
     <include layout="@layout/content_main" />
 

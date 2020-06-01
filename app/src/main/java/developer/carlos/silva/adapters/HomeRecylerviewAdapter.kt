@@ -1,5 +1,6 @@
 package developer.carlos.silva.adapters
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Handler
@@ -7,9 +8,13 @@ import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnTouchListener
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnimationUtils
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentTransaction
@@ -88,6 +93,22 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val itemView = holder.itemView
+
+        itemView.setOnTouchListener(OnTouchListener { v, _ ->
+            v.parent.requestDisallowInterceptTouchEvent(true)
+            false
+        })
+
+        if (holder.itemView.visibility == RecyclerView.GONE) {
+            val objectAnimator = ObjectAnimator.ofFloat(holder.itemView, "x", 1500f, 0f)
+            objectAnimator.duration = 600
+            objectAnimator.interpolator = AccelerateDecelerateInterpolator()
+
+            objectAnimator.start()
+
+            holder.itemView.visibility = RecyclerView.VISIBLE
+        }
+
         if (itemView is RecyclerView) {
 
             val itemViewHolder = (holder as ItemViewHolder)

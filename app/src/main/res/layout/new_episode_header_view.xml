@@ -3,22 +3,74 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/transparent"
     android:visibility="gone"
+    android:layout_marginEnd="@dimen/fab_margin"
+    android:layout_marginStart="@dimen/fab_margin"
+    android:layout_marginBottom="@dimen/fab_margin"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
-    <androidx.cardview.widget.CardView
-        app:cardUseCompatPadding="true"
-        app:cardElevation="4dp"
+
+    <LinearLayout
+        android:id="@+id/info"
+        android:layout_marginBottom="@dimen/fab_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <RelativeLayout
+            android:id="@+id/menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardview"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/gleipnir_episodios"
+                    android:id="@+id/img"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"/>
+            </androidx.cardview.widget.CardView>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@android:id/text2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/fab_margin"
+                android:layout_marginStart="@dimen/fab_margin"
+                android:layout_marginEnd="@dimen/fab_margin"
+                android:textSize="13sp"
+                android:lines="9"
+                android:ellipsize="end"
+                android:text="Naruto"
+                android:textColor="@android:color/darker_gray"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:visibility="gone"
+        android:id="@+id/start_watch"
+        android:background="@drawable/start_watch"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="@dimen/fab_margin"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:layout_marginEnd="@dimen/fab_margin"
         android:layout_centerInParent="true"
-        app:cardBackgroundColor="@android:color/white"
-        app:cardCornerRadius="15dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <ImageView
-            android:layout_gravity="center_horizontal"
-            android:id="@+id/img"
-            android:scaleType="fitXY"
-            android:adjustViewBounds="true"
-            android:layout_height="180dp"
-            android:layout_width="130dp"/>
-    </androidx.cardview.widget.CardView>
+        android:text="assistir"
+        android:layout_below="@+id/info"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"/>
+
 </RelativeLayout>

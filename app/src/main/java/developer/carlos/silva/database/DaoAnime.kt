@@ -10,7 +10,7 @@ import developer.carlos.silva.database.models.DataEpisode
 
 @Dao
 interface DaoAnime {
-    @Query("SELECT * FROM DataAnime")
+    @Query("SELECT * FROM DataAnime ORDER BY id DESC")
     fun getAll(): MutableList<AnimeAndEpisodes>
 
     @Insert (onConflict = OnConflictStrategy.REPLACE)
