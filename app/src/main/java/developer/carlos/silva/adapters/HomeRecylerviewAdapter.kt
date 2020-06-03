@@ -17,6 +17,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityManagerCompat
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.util.Pair
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,6 +46,7 @@ import developer.carlos.silva.singletons.MainController
 import developer.carlos.silva.utils.Utils
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jsoup.Jsoup
+import java.lang.Exception
 import java.util.*
 
 
@@ -365,39 +370,43 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         LoadDialog.show(mHomeFragment?.fragmentManager!!)
 
                         Thread {
-                            val doc = Jsoup.connect(anime.link).get()
-                            val scripts = doc.select("script")
-                            val script =
-                                scripts.find { it.toString().contains("sources:") }.toString()
-                            val type = object : TypeToken<MutableList<Player>>() {}.type
-                            val result = Utils.uncodedScriptText<MutableList<Player>>(
-                                script,
-                                type
-                            )
+                            try {
+                                val doc = Jsoup.connect(anime.link).get()
+                                val scripts = doc.select("script")
+                                val script =
+                                    scripts.find { it.toString().contains("sources:") }.toString()
+                                val type = object : TypeToken<MutableList<Player>>() {}.type
+                                val result = Utils.uncodedScriptText<MutableList<Player>>(
+                                    script,
+                                    type
+                                )
 
-                            MainController.getInstance()?.getHandler()?.post {
-                                val dialog = AlertDialog.Builder(mRecyclerView!!.context)
-                                    .setTitle(anime.title)
-                                    .setItems(result.map { it.label }
-                                        .toTypedArray()) { dialogInterface, i ->
-                                        val intent = Intent(Intent.ACTION_VIEW)
-                                        intent.setDataAndType(
-                                            Uri.parse(result[i].file),
-                                            result[i].type
-                                        )
-                                        mRecyclerView!!.context.startActivity(intent)
-                                    }.setOnDismissListener {
+                                MainController.getInstance()?.getHandler()?.post {
+                                    val dialog = AlertDialog.Builder(mRecyclerView!!.context)
+                                        .setTitle(anime.title)
+                                        .setItems(result.map { it.label }
+                                            .toTypedArray()) { dialogInterface, i ->
+                                            val intent = Intent(Intent.ACTION_VIEW)
+                                            intent.setDataAndType(
+                                                Uri.parse(result[i].file),
+                                                result[i].type
+                                            )
+                                            mRecyclerView!!.context.startActivity(intent)
+                                        }.setOnDismissListener {
+                                            LoadDialog.hide(mHomeFragment?.fragmentManager!!)
+                                        }.create()
+
+                                    dialog.setOnShowListener {
                                         LoadDialog.hide(mHomeFragment?.fragmentManager!!)
-                                    }.create()
+                                    }
 
-                                dialog.setOnShowListener {
-                                    LoadDialog.hide(mHomeFragment?.fragmentManager!!)
+                                    dialog.show()
                                 }
 
-                                dialog.show()
-                            }
+                                Log.d("%s", anime.link)
+                            } catch (e: Exception) {
 
-                            Log.d("%s", anime.link)
+                            }
                         }.start()
                     }
 
@@ -453,12 +462,18 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 } else {
 
                     holder.itemView.setOnClickListener {
+                        val activity = mHomeFragment?.activity
                         val intent = Intent(
                             mRecyclerView!!.context, AnimeActivity::class.java
                         )
 
                         intent.putExtra("data", anime)
-                        mRecyclerView!!.context.startActivity(intent)
+                        val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                            activity!!,
+                            Pair(holder.itemView, activity.getString(R.string.transition_name))
+                        ).toBundle()
+
+                        mRecyclerView?.context?.startActivity(intent, bundle)
                     }
 
                     Glide.with(holder.itemView.context)
@@ -475,6 +490,7 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         }
 
         inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
             var img = itemView.findViewById<ImageView>(R.id.img)
             var text1 = itemView.findViewById<TextView>(android.R.id.text1)
             var next = itemView.findViewById<ImageView>(R.id.next)

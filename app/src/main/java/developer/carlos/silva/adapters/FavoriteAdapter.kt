@@ -13,11 +13,14 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.util.Pair
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
+import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.database.models.AnimeAndEpisodes
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.database.models.DataAnime
@@ -25,7 +28,7 @@ import developer.carlos.silva.database.models.DataAnime
 class FavoriteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var items = mutableListOf<AnimeAndEpisodes>()
-
+    lateinit var mActivity: MainActivity
     fun addItems(items: MutableList<AnimeAndEpisodes>) {
         this.items.clear()
         this.items.addAll(items)
@@ -70,7 +73,7 @@ class FavoriteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                                 R.anim.transition_down_to_up
                             )
                             animation.interpolator = AccelerateDecelerateInterpolator()
-                            animation.duration = 600
+                            animation.duration = 700
                             holder.itemView.startAnimation(animation)
                             holder.itemView.visibility = LinearLayout.VISIBLE
                         }
@@ -83,9 +86,12 @@ class FavoriteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 val intent = Intent(
                     context, AnimeActivity::class.java
                 )
-
+                val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    mActivity,
+                    Pair(holder.image, mActivity.getString(R.string.transition_name))
+                ).toBundle()
                 intent.putExtra("data", items[position])
-                context.startActivity(intent)
+                context.startActivity(intent, bundle)
             }
         }
     }

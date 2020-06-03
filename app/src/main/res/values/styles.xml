@@ -9,6 +9,9 @@
         <item name="android:windowBackground">@color/colorPrimary</item>
         <item name="fontFamily">@font/chelseamarket_regular</item>
         <item name="android:navigationBarColor">@color/colorPrimary</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/explode</item>
+<!--        <item name="android:windowSharedElementExitTransition">@android:transition/explode</item>-->
     </style>
 
     <style name="AppTheme.NoActionBar">

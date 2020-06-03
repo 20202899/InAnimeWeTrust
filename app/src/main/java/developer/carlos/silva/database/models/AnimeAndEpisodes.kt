@@ -9,5 +9,5 @@ data class AnimeAndEpisodes(
         parentColumn = "id",
         entityColumn = "foreignKey"
     )
-    var epsodes: List<DataEpisode>
+    var epsodes: MutableList<DataEpisode>
 ) : Serializable

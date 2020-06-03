@@ -49,6 +49,7 @@ class LoaderAnimes {
         fun loadAnimes(animeLoaderListener: AnimeLoaderListener?, link: String) {
             Thread {
                 try {
+                    var count = 0
                     val doc = Jsoup.connect(link).get()
                     val sinopse = doc.select("#sinopse2").first()?.text() ?: ""
                     val capaAnime = doc.select("#capaAnime")
@@ -63,7 +64,8 @@ class LoaderAnimes {
                                 id = element.videoId,
                                 foreignKey = videoId,
                                 link = element.link,
-                                title = element.title
+                                title = element.title,
+                                order = count++
                             )
                         }.toMutableList()
 

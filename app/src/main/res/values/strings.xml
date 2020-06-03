@@ -95,4 +95,5 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="action_search">Pesquisar Anime</string>
+    <string name="transition_name">anime_transition</string>
 </resources>

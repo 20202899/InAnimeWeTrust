@@ -18,16 +18,19 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/cardview"
             app:cardCornerRadius="4dp"
+            app:cardBackgroundColor="@color/colorPrimary"
             app:cardElevation="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
             <ImageView
+                android:transitionName="@string/transition_name"
+                android:background="@color/colorPrimary"
                 android:adjustViewBounds="true"
                 android:scaleType="fitXY"
                 android:src="@drawable/gleipnir_episodios"
                 android:id="@+id/img"
-                android:layout_width="match_parent"
+                android:layout_width="130dp"
                 android:layout_height="180dp"/>
         </androidx.cardview.widget.CardView>
 

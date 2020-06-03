@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/transparent"
-    android:visibility="gone"
+
     android:layout_marginEnd="@dimen/fab_margin"
     android:layout_marginStart="@dimen/fab_margin"
     android:layout_marginBottom="@dimen/fab_margin"
@@ -28,11 +28,12 @@
                 android:layout_height="wrap_content">
 
                 <ImageView
+                    android:background="@color/colorPrimary"
+                    android:transitionName="@string/transition_name"
                     android:adjustViewBounds="true"
                     android:scaleType="fitXY"
-                    android:src="@drawable/gleipnir_episodios"
                     android:id="@+id/img"
-                    android:layout_width="match_parent"
+                    android:layout_width="130dp"
                     android:layout_height="180dp"/>
             </androidx.cardview.widget.CardView>
 
@@ -52,7 +53,6 @@
                 android:textSize="13sp"
                 android:lines="9"
                 android:ellipsize="end"
-                android:text="Naruto"
                 android:textColor="@android:color/darker_gray"
                 android:textStyle="bold" />
 

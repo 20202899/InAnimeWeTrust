@@ -45,12 +45,9 @@ class CalendarFragment : Fragment() {
             DividerItemDecoration.VERTICAL
         )
 
-        dividerItemDecoration.setDrawable(mainActivity.getDrawable(R.drawable.divider_item_list))
-
         recyclerview.setHasFixedSize(true)
         recyclerview.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-//        recyclerview.addItemDecoration(dividerItemDecoration)
 
         recyclerview.adapter = mAdapter
 

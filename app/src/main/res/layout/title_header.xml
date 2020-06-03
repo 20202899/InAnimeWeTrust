@@ -7,7 +7,7 @@
     android:text="Mais Assistidos"
     android:layout_centerVertical="true"
     android:layout_marginStart="@dimen/fab_margin"
-    android:textSize="15sp"
+    android:textSize="16sp"
     android:textStyle="bold"
     android:textColor="#fff"
     android:layout_width="wrap_content"

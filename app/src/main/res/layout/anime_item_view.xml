@@ -14,6 +14,7 @@
         android:layout_height="wrap_content">
 
         <ImageView
+            android:transitionName="@string/transition_name"
             android:adjustViewBounds="true"
             android:scaleType="fitXY"
             android:src="@drawable/gleipnir_episodios"

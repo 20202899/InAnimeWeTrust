@@ -17,6 +17,7 @@ class Utils {
             return gson.fromJson(endless, type)
         }
 
-        fun getDigitFromString (s: String) = "\\d+".toRegex().find(s)!!.groupValues[0].toInt()
+        fun getDigitFromString (s: String) = "\\d+".toRegex().find(s)!!.groupValues.last().toInt()
+        fun getAllDigitFromString (s: String) = s.replace("[^0-9]".toRegex(), "")
     }
 }

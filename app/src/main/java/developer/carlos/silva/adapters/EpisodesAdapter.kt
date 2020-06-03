@@ -68,38 +68,42 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 LoadDialog.show(mEpisodesFragment.fragmentManager!!)
 
                 Thread {
-                    val doc = Jsoup.connect(anime.link).get()
-                    val scripts = doc.select("script")
-                    val script = scripts.find { it.toString().contains("sources:") }.toString()
-                    val type = object : TypeToken<MutableList<Player>>() {}.type
-                    val result = Utils.uncodedScriptText<MutableList<Player>>(
-                        script,
-                        type
-                    )
+                    try {
+                        val doc = Jsoup.connect(anime.link).get()
+                        val scripts = doc.select("script")
+                        val script = scripts.find { it.toString().contains("sources:") }.toString()
+                        val type = object : TypeToken<MutableList<Player>>() {}.type
+                        val result = Utils.uncodedScriptText<MutableList<Player>>(
+                            script,
+                            type
+                        )
 
-                    MainController.getInstance()?.getHandler()?.post {
-                        val dialog = AlertDialog.Builder(mEpisodesFragment.context!!)
-                            .setTitle(anime.title)
-                            .setItems(result.map { it.label }
-                                .toTypedArray()) { _, i ->
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.setDataAndType(
-                                    Uri.parse(result[i].file),
-                                    result[i].type
-                                )
-                                mEpisodesFragment.context!!.startActivity(intent)
-                            }.setOnDismissListener {
+                        MainController.getInstance()?.getHandler()?.post {
+                            val dialog = AlertDialog.Builder(mEpisodesFragment.context!!)
+                                .setTitle(anime.title)
+                                .setItems(result.map { it.label }
+                                    .toTypedArray()) { _, i ->
+                                    val intent = Intent(Intent.ACTION_VIEW)
+                                    intent.setDataAndType(
+                                        Uri.parse(result[i].file),
+                                        result[i].type
+                                    )
+                                    mEpisodesFragment.context!!.startActivity(intent)
+                                }.setOnDismissListener {
 
-                            }.create()
+                                }.create()
 
-                        dialog.setOnShowListener {
-                            LoadDialog.hide(mEpisodesFragment.fragmentManager!!)
+                            dialog.setOnShowListener {
+                                LoadDialog.hide(mEpisodesFragment.fragmentManager!!)
+                            }
+
+                            dialog.show()
                         }
 
-                        dialog.show()
-                    }
+                        Log.d("%s", anime.link)
+                    }catch (e: Exception) {
 
-                    Log.d("%s", anime.link)
+                    }
                 }.start()
             }
 
