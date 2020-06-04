@@ -3,6 +3,7 @@ package developer.carlos.silva.adapters
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.Gravity
@@ -24,9 +25,7 @@ import androidx.core.util.Pair
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.Slide
-import androidx.transition.Transition
-import androidx.transition.TransitionManager
+import androidx.transition.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
@@ -56,6 +55,7 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var mHomeFragment: HomeFragment? = null
     private val mHandler = Handler()
     private val mTimer = Timer()
+    var animatePause = false
 
     fun addItems(items: MutableList<Any>) {
         this.items.clear()
@@ -136,7 +136,7 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     override fun run() {
                         try {
 
-                            if (adapter.inAnimation)
+                            if (adapter.inAnimation && !animatePause)
                                 return
 
                             val max = (items[position] as MutableList<*>).size
@@ -174,7 +174,7 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         }
                     }
 
-                }, 5000, 5000)
+                }, 12000, 12000)
             }
 
             itemView.setHasFixedSize(true)
@@ -264,9 +264,9 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 return
             }
 
-            val bounds = Slide(Gravity.END)
+            val bounds = ChangeScroll()
             inAnimation = true
-            bounds.interpolator = OvershootInterpolator()
+            bounds.interpolator = AccelerateDecelerateInterpolator()
 
             bounds.addListener(object : Transition.TransitionListener {
                 override fun onTransitionEnd(transition: Transition) {
@@ -299,9 +299,9 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 return
             }
 
+            val bounds = ChangeScroll()
             inAnimation = true
-            val bounds = Slide(Gravity.START)
-            bounds.interpolator = OvershootInterpolator()
+            bounds.interpolator = AccelerateDecelerateInterpolator()
 
             bounds.addListener(object : Transition.TransitionListener {
                 override fun onTransitionEnd(transition: Transition) {
@@ -382,8 +382,11 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                                 )
 
                                 MainController.getInstance()?.getHandler()?.post {
-                                    val dialog = AlertDialog.Builder(mRecyclerView!!.context)
+                                    val dialog = AlertDialog.Builder(mRecyclerView!!.context, R.style.AppTheme_Dialog)
                                         .setTitle(anime.title)
+                                        .setNeutralButton(android.R.string.ok) { dialogInterface, i ->
+                                            dialogInterface.dismiss()
+                                        }
                                         .setItems(result.map { it.label }
                                             .toTypedArray()) { dialogInterface, i ->
                                             val intent = Intent(Intent.ACTION_VIEW)
@@ -461,20 +464,33 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
                 } else {
 
-                    holder.itemView.setOnClickListener {
+                    holder.itemView.setOnClickListener(null)
+                    val listener = View.OnClickListener {
                         val activity = mHomeFragment?.activity
                         val intent = Intent(
                             mRecyclerView!!.context, AnimeActivity::class.java
                         )
 
                         intent.putExtra("data", anime)
-                        val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                            activity!!,
-                            Pair(holder.itemView, activity.getString(R.string.transition_name))
-                        ).toBundle()
+
+                        val bundle = if (column == 3) {
+                            holder.img.transitionName = null
+                            ActivityOptionsCompat.makeSceneTransitionAnimation(
+                                activity!!).toBundle()
+                        }else {
+                            holder.img.transitionName = activity?.getString(R.string.transition_name)
+                            ActivityOptionsCompat.makeSceneTransitionAnimation(
+                                activity!!,
+                                Pair(holder.itemView, activity.getString(R.string.transition_name))
+                            ).toBundle()
+                        }
+
+                        animatePause = true
 
                         mRecyclerView?.context?.startActivity(intent, bundle)
                     }
+
+                    holder.itemView.setOnClickListener(listener)
 
                     Glide.with(holder.itemView.context)
                         .asBitmap()

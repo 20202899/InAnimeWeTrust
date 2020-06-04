@@ -17,6 +17,7 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardview"
+            android:transitionName="@string/transition_name"
             app:cardCornerRadius="4dp"
             app:cardBackgroundColor="@color/colorPrimary"
             app:cardElevation="8dp"
@@ -24,7 +25,6 @@
             android:layout_height="wrap_content">
 
             <ImageView
-                android:transitionName="@string/transition_name"
                 android:background="@color/colorPrimary"
                 android:adjustViewBounds="true"
                 android:scaleType="fitXY"
@@ -65,7 +65,7 @@
             android:layout_marginEnd="@dimen/fab_margin"
             android:layout_marginBottom="@dimen/fab_margin"
             android:textSize="13sp"
-            android:lines="7"
+            android:lines="8"
             android:ellipsize="end"
             android:text="Naruto"
             android:textColor="@android:color/darker_gray"

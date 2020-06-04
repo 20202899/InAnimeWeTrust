@@ -47,6 +47,7 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
         super.onActivityCreated(savedInstanceState)
         mMainActivity = activity as MainActivity
         mMainActivity?.search_view?.setOnQueryTextListener(this)
+        mAdapter.mMainActivity = mMainActivity!!
         val closeButton = mMainActivity?.search_view?.findViewById(R.id.search_close_btn) as ImageView?
         closeButton?.setOnClickListener {
             mMainActivity?.hideKeyboard()

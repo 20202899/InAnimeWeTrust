@@ -6,16 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.app.ActivityOptionsCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
+import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.models.Anime
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = mutableListOf<Any>()
-
+    lateinit var mMainActivity: MainActivity
     fun addItems(items: MutableList<Any>) {
         this.items.clear()
         this.items.addAll(items)
@@ -43,9 +45,11 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 val intent = Intent(
                     holder.itemView.context, AnimeActivity::class.java
                 )
+                val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(mMainActivity)
+                    .toBundle()
 
                 intent.putExtra("data", anime)
-                holder.itemView.context.startActivity(intent)
+                holder.itemView.context.startActivity(intent, bundle)
             }
 
             Glide.with(holder.itemView.context)

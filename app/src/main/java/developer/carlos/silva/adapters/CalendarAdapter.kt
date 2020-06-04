@@ -6,16 +6,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
+import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.models.Anime
 
 class CalendarAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var items = mutableListOf<Any>()
-
+    lateinit var mActivity: MainActivity
     fun addItems(items: MutableList<Any>) {
         this.items.clear()
         this.items.addAll(items)
@@ -62,9 +64,9 @@ class CalendarAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 val intent = Intent(
                     context, AnimeActivity::class.java
                 )
-
+                val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(mActivity).toBundle()
                 intent.putExtra("data", anime)
-                context.startActivity(intent)
+                context.startActivity(intent, bundle)
             }
         }
 

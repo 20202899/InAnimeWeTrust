@@ -47,8 +47,8 @@ class MainActivity : AppCompatActivity() {
                             toolbar_layout.title = "Calendário"
                             title = "Calendário"
                         } else {
-                            toolbar_layout.title = "Episódios"
-                            title = "Episódios"
+                            toolbar_layout.title = "Disponível"
+                            title = "Disponível"
                         }
 
                         supportActionBar?.setDisplayHomeAsUpEnabled(true)

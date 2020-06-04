@@ -11,7 +11,7 @@
 
     <LinearLayout
         android:id="@+id/info"
-        android:layout_marginBottom="@dimen/fab_margin"
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -21,6 +21,7 @@
             android:layout_height="wrap_content">
 
             <androidx.cardview.widget.CardView
+                android:transitionName="@string/transition_name"
                 android:id="@+id/cardview"
                 app:cardCornerRadius="4dp"
                 app:cardElevation="8dp"
@@ -29,7 +30,6 @@
 
                 <ImageView
                     android:background="@color/colorPrimary"
-                    android:transitionName="@string/transition_name"
                     android:adjustViewBounds="true"
                     android:scaleType="fitXY"
                     android:id="@+id/img"
@@ -51,7 +51,7 @@
                 android:layout_marginStart="@dimen/fab_margin"
                 android:layout_marginEnd="@dimen/fab_margin"
                 android:textSize="13sp"
-                android:lines="9"
+                android:lines="10"
                 android:ellipsize="end"
                 android:textColor="@android:color/darker_gray"
                 android:textStyle="bold" />

@@ -40,6 +40,7 @@ class CalendarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mainActivity = activity as MainActivity
+        mAdapter.mActivity = mainActivity
         val dividerItemDecoration = DividerItemDecoration(
             context,
             DividerItemDecoration.VERTICAL

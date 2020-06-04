@@ -79,8 +79,11 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         )
 
                         MainController.getInstance()?.getHandler()?.post {
-                            val dialog = AlertDialog.Builder(mEpisodesFragment.context!!)
+                            val dialog = AlertDialog.Builder(mEpisodesFragment.context!!, R.style.AppTheme_Dialog)
                                 .setTitle(anime.title)
+                                .setNeutralButton(android.R.string.ok) { dialogInterface, i ->
+                                    dialogInterface.dismiss()
+                                }
                                 .setItems(result.map { it.label }
                                     .toTypedArray()) { _, i ->
                                     val intent = Intent(Intent.ACTION_VIEW)

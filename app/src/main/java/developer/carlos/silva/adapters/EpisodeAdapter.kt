@@ -45,9 +45,6 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var RGB_COLOR_DOMINANT = -1
     var RGB_COLOR_TEXT = -1
-    var RGB_DEFAULT_COLOR = R.color.colorPrimary
-    var lastIndexAnimation = -1
-    var isShow = false
     var mDataAnime: DataAnime? = null
     lateinit var mActivity: AnimeActivity
     private var mHeaderViewHolder: HeaderViewHolder? = null
@@ -106,14 +103,12 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
 
             if (mActivity.getIds().contains(anime.id)) {
-                holder.cardview.setBackgroundColor(RGB_COLOR_TEXT)
+                holder.itemView.background = ContextCompat.getDrawable(mActivity, R.drawable.start_watch_selected)
             } else {
-                holder.cardview.setBackgroundColor(
-                    ContextCompat.getColor(
-                        mActivity,
-                        R.color.colorPrimary
-                    )
-                )
+                holder.itemView.setBackgroundColor(ContextCompat.getColor(
+                    mActivity,
+                    R.color.colorPrimary
+                ))
             }
 
 //            if (position > lastIndexAnimation) {
@@ -148,7 +143,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
                 mActivity.saveSets(anime.id.toString())
 
-                holder.cardview.setBackgroundColor(RGB_COLOR_TEXT)
+                holder.itemView.background = ContextCompat.getDrawable(mActivity, R.drawable.start_watch_selected)
 
                 LoadDialog.show(mActivity.supportFragmentManager)
 
@@ -163,8 +158,10 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     )
 
                     MainController.getInstance()?.getHandler()?.post {
-                        val dialog = AlertDialog.Builder(mActivity)
+                        val dialog = AlertDialog.Builder(mActivity, R.style.AppTheme_Dialog)
                             .setTitle(anime.title)
+                            .setNeutralButton(android.R.string.ok) { dialogInterface, i ->
+                            }
                             .setItems(result.map { it.label }
                                 .toTypedArray()) { dialogInterface, i ->
                                 val intent = Intent(Intent.ACTION_VIEW)

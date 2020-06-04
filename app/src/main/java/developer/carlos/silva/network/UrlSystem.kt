@@ -2,13 +2,13 @@ package developer.carlos.silva.network
 
 class UrlSystem {
     companion object {
-        private const val MAIN_URL = "https://www.anitube.site/"
+        private const val MAIN_URL = "https://www.anitube.site/?__cf_chl_jschl_tk__="
         private const val SEARCH_URL = "https://www.anitube.site/?s=%s"
-        private const val EPISODES_URL = "lista-de-episodios/"
-        private const val CALENDAR_URL = "calendario/"
+        private const val EPISODES_URL = "https://www.anitube.site/lista-de-episodios/"
+        private const val CALENDAR_URL = "https://www.anitube.site/calendario/"
         fun get() = MAIN_URL
         fun search(label: String?) = String.format(SEARCH_URL, label)
-        fun episodes() = MAIN_URL + EPISODES_URL
-        fun calendar() = MAIN_URL + CALENDAR_URL
+        fun episodes() = EPISODES_URL
+        fun calendar() = CALENDAR_URL
     }
 }

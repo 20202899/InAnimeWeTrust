@@ -64,6 +64,11 @@ class HomeFragment : Fragment(), AnimeLoaderListener {
         LoaderAnimes.loadAnimes(this)
     }
 
+    override fun onResume() {
+        super.onResume()
+        mAdapter.animatePause = true
+    }
+
     override fun onLoad(animes: MutableList<Any>) {
         mAdapter.addItems(animes)
 

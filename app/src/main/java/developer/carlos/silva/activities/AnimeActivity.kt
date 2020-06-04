@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.PorterDuff
 import android.os.Bundle
-import android.transition.TransitionInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
@@ -17,6 +16,7 @@ import androidx.palette.graphics.Palette
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import android.transition.ChangeBounds
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.squareup.picasso.Callback
@@ -77,6 +77,7 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
 
         val data = intent.extras["data"]
         var listener: View.OnClickListener? = null
+
         recyclerview.setHasFixedSize(true)
         recyclerview.layoutManager = LinearLayoutManager(
             this,
@@ -86,11 +87,13 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
         recyclerview.adapter = mAdapter
 
         mAdapter.mActivity = this
+        fab.mActivity = this
         if (data is Anime) {
 
             isLink = data.imagePath.isNotEmpty()
             title = data.title
-
+            fab.title = data.title
+            mAdapter.IMG_PATH = data.imagePath
             LoaderAnimes.loadAnimes(this, data.link)
 
             listener = View.OnClickListener {
@@ -99,17 +102,18 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
                     val daoAnime = db.dataAnimeDao()
 
                     if (daoAnime.isExist(dataAnime!!.id) == null) {
+                        dataAnime!!.isWatch = fab.isWatching
                         dataAnime!!.title = data.title
                         dataAnime!!.link = data.link
                         daoAnime.insertAnime(dataAnime!!)
                         daoAnime.insertEpisode(dataAnime!!.lista)
                         MainController.getInstance()?.getHandler()?.post {
-                            fab.removeAnim()
+                            fab.isAdded = true
                         }
                     } else {
                         daoAnime.deleteById(dataAnime!!.id)
                         MainController.getInstance()?.getHandler()?.post {
-                            fab.addAnim()
+                            fab.isAdded = false
                         }
                     }
 
@@ -119,12 +123,15 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
         }
 
         if (data is AnimeAndEpisodes) {
+
             dataAnime = data.dataAnime
             isLink = dataAnime!!.capa.isNotEmpty()
             title = dataAnime!!.title
             mAdapter.IMG_PATH = dataAnime!!.capa
             mAdapter.mDataAnime = dataAnime
             text2.text = dataAnime?.sinopse
+            fab.title = dataAnime!!.title
+
             Picasso.get()
                 .load(mAdapter.IMG_PATH)
                 .fit()
@@ -139,22 +146,32 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
                     }
 
                 })
-            isCheckAdded()
+
             listener = View.OnClickListener {
                 Thread {
                     val db = DatabaseServices.getDataBaseInstance(this)
                     val daoAnime = db.dataAnimeDao()
 
                     if (daoAnime.isExist(dataAnime!!.id) == null) {
+                        dataAnime!!.isWatch = fab.isWatching
                         daoAnime.insertAnime(dataAnime!!)
                         daoAnime.insertEpisode(data.epsodes)
                         MainController.getInstance()?.getHandler()?.post {
-                            fab.removeAnim()
+                            val changeBounds = ChangeBounds()
+                            window.sharedElementReturnTransition = changeBounds
+                            window.sharedElementReenterTransition = changeBounds
+                            window.sharedElementExitTransition = changeBounds
+                            img.transitionName = getString(R.string.transition_name)
+                            fab.isAdded = true
                         }
                     } else {
                         daoAnime.deleteById(dataAnime!!.id)
                         MainController.getInstance()?.getHandler()?.post {
-                            fab.addAnim()
+                            window.sharedElementReturnTransition = null
+                            window.sharedElementReenterTransition = null
+                            window.sharedElementExitTransition = null
+                            img.transitionName = null
+                            fab.isAdded = false
                         }
                     }
 
@@ -170,13 +187,19 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
 
             progressbar.visibility = ProgressBar.GONE
             recyclerview.visibility = RecyclerView.VISIBLE
+
+            isCheckAdded()
+
         }
 
-        fab.setOnClickListener(listener)
+        fab.setOnAddClickListener(listener)
+        fab.onClickListener(View.OnClickListener {
+            isCheckAdded()
+        })
         mAdapter.RGB_COLOR_TEXT = ContextCompat.getColor(this, android.R.color.holo_red_dark)
     }
 
-    fun isCheckAdded() {
+    private fun isCheckAdded() {
 
         if (fab.visibility == FloatingActionButton.GONE) {
             fab.startAnimation(AnimationUtils.loadAnimation(this, R.anim.scale_fade_in))
@@ -189,11 +212,13 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
 
             if (daoAnime.isExist(dataAnime!!.id) != null) {
                 MainController.getInstance()?.getHandler()?.post {
+                    fab.isAdded = true
                     fab.removeAnim()
                 }
             } else {
                 daoAnime.deleteById(dataAnime!!.id)
                 MainController.getInstance()?.getHandler()?.post {
+                    fab.isAdded = false
                     fab.addAnim()
                 }
             }
@@ -269,6 +294,22 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
 
         if (mAdapter.IMG_PATH.isNullOrEmpty()) {
             mAdapter.IMG_PATH = dataAnime!!.capa
+            text2.text = dataAnime?.sinopse
+            Picasso.get()
+                .load(mAdapter.IMG_PATH)
+                .fit()
+                .noFade()
+                .into(img, object : Callback {
+                    override fun onSuccess() {
+                        finishTransition()
+                    }
+
+                    override fun onError(e: Exception?) {
+                        finishTransition()
+                    }
+
+                })
+        }else {
             text2.text = dataAnime?.sinopse
             Picasso.get()
                 .load(mAdapter.IMG_PATH)
