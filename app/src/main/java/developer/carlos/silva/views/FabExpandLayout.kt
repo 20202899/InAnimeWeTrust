@@ -8,18 +8,15 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnimationUtils
 import android.view.animation.OvershootInterpolator
 import android.widget.*
+import androidx.activity.OnBackPressedCallback
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.transition.ChangeBounds
-import androidx.transition.ChangeImageTransform
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
-import developer.carlos.silva.extensions.removeAnim
-import kotlinx.android.synthetic.main.activity_anime.view.*
+import kotlinx.android.synthetic.main.activity_anime.*
 import kotlinx.android.synthetic.main.fab_expand_layout.view.*
 import kotlinx.android.synthetic.main.fab_expand_layout.view.img
 
@@ -92,11 +89,13 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
             return
         }
 
+        mActivity.main_container.removeView(mActivity.main_container.findViewById(android.R.id.edit))
+
         inAnimation = true
 
         val changeBounds = ChangeBounds()
         val params = this.layoutParams as CoordinatorLayout.LayoutParams
-        changeBounds.interpolator = OvershootInterpolator()
+        changeBounds.interpolator = AccelerateDecelerateInterpolator()
         changeBounds.duration = 700
         params.width = defaultParams.width
         params.height = defaultParams.height
@@ -107,9 +106,8 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
         changeBounds.addListener(object : Transition.TransitionListener {
             override fun onTransitionEnd(transition: Transition) {
                 background = ContextCompat.getDrawable(context, android.R.color.transparent)
-                img.visibility = ImageView.VISIBLE
-
                 inAnimation = false
+                isExpanded = false
             }
 
             override fun onTransitionResume(transition: Transition) {
@@ -129,9 +127,23 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
             }
 
         })
+
+        val fadeIn = AnimationUtils.loadAnimation(context, android.R.anim.fade_in)
+        val fadeOut = AnimationUtils.loadAnimation(context, android.R.anim.fade_out)
+
+        fadeIn.interpolator = AccelerateDecelerateInterpolator()
+        fadeIn.duration = 1000
+        fadeOut.interpolator = AccelerateDecelerateInterpolator()
+        fadeOut.duration = 500
+
+        img.startAnimation(fadeIn)
+        info_menu.startAnimation(fadeOut)
+
         img.background =
             ContextCompat.getDrawable(context, R.drawable.fab_expand_background)
-        info_menu.visibility = FrameLayout.GONE
+
+        img.visibility = ImageView.VISIBLE
+        info_menu.visibility = GONE
         TransitionManager.beginDelayedTransition(this, changeBounds)
 
     }
@@ -141,6 +153,15 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
         if (inAnimation) {
             return
         }
+
+        mActivity.main_container.addView(View(context).apply {
+            background = context.getDrawable(android.R.color.black)
+            alpha = 0.7f
+            id = android.R.id.edit
+            isEnabled = true
+            requestFocus()
+            isClickable = true
+        }, CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT))
 
         inAnimation = true
 
@@ -165,8 +186,8 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
 
                 newChangeBounds.addListener(object : Transition.TransitionListener {
                     override fun onTransitionEnd(transition: Transition) {
-                        info_menu.visibility = VISIBLE
                         inAnimation = false
+                        isExpanded = true
                     }
 
                     override fun onTransitionResume(transition: Transition) {
@@ -187,6 +208,7 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
 
                 })
 
+                info_menu.visibility = VISIBLE
                 newChangeBounds.interpolator = OvershootInterpolator()
                 newChangeBounds.duration = 500
                 img.visibility = ImageView.GONE
@@ -291,6 +313,17 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
             }
 
         }
+
+        mActivity.onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (isExpanded) {
+                    hideDialogExpand()
+                }else {
+                    mActivity.finishAfterTransition()
+                }
+            }
+        })
+
         viewTreeObserver.removeOnGlobalLayoutListener(this)
     }
 

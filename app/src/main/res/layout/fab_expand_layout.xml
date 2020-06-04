@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
+    android:clipToPadding="true"
+    android:elevation="8dp"
     android:theme="@style/AppTheme.FabExpantDialog"
+    android:background="@android:color/transparent"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/fab_expand_background"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/img"
+        android:background="@drawable/fab_expand_background"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:layout_centerInParent="true"
         android:src="@drawable/ic_star_black_24dp"
         android:adjustViewBounds="true"
