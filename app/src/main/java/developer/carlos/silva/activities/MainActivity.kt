@@ -3,20 +3,20 @@ package developer.carlos.silva.activities
 import android.animation.Animator
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.appbar.CollapsingToolbarLayout
+import androidx.core.app.ActivityOptionsCompat
 import developer.carlos.silva.R
 import developer.carlos.silva.adapters.FragmentAdapter
-import developer.carlos.silva.extensions.hide
+import developer.carlos.silva.extensions.hideSystemUI
 import developer.carlos.silva.extensions.show
+import developer.carlos.silva.extensions.showSystemUI
 import developer.carlos.silva.fragments.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -37,7 +38,8 @@ class MainActivity : AppCompatActivity() {
         bottomview.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.home_id -> {
-                    if (supportFragmentManager.findFragmentById(R.id.container_main) is EpisodesFragment || supportFragmentManager.findFragmentById(
+                    val chieldFM = mFragmentAdapter.fragments[0].childFragmentManager
+                    if (chieldFM.findFragmentById(R.id.container_main) is EpisodesFragment || chieldFM.findFragmentById(
                             R.id.container_main
                         ) is CalendarFragment
                     ) {
@@ -52,7 +54,11 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                        toolbar.show()
+                        toolbar.showWithAnimation()
+                    } else if (mFragmentAdapter.fragments[2].childFragmentManager.findFragmentById(R.id.container_animes) != null) {
+                        toolbar_layout.title = getString(R.string.app_name)
+                        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                        toolbar.hideWithAnimation()
                     } else {
                         toolbar_layout.title = getString(R.string.app_name)
 //                        title = getString(R.string.app_name)
@@ -62,8 +68,50 @@ class MainActivity : AppCompatActivity() {
                     search_view.visibility = SearchView.GONE
                 }
 
+                R.id.list_id -> {
+
+                    val fragment = mFragmentAdapter.fragments[2].childFragmentManager.findFragmentById(R.id.container_animes)
+
+                    if (fragment == null) {
+                        toolbar.hideWithAnimation()?.addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationRepeat(animation: Animator?) {
+
+                            }
+
+                            override fun onAnimationEnd(animation: Animator?) {
+                                supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                            }
+
+                            override fun onAnimationCancel(animation: Animator?) {
+
+                            }
+
+                            override fun onAnimationStart(animation: Animator?) {
+
+                            }
+
+                        })
+
+
+                        toolbar_layout.title = "Gêneros"
+                    } else {
+                        var title = "Gêneros"
+
+                        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                        toolbar.showWithAnimation()
+                        (fragment as AnimesFragment?)?.apply {
+                            title = arguments!!.getString("title") ?: "Gêneros"
+                        }
+
+                        toolbar_layout.title = title
+                    }
+
+                    search_view.visibility = SearchView.GONE
+                    viewpager.currentItem = 2
+                }
+
                 R.id.search_id -> {
-                    toolbar.hide().addListener(object : Animator.AnimatorListener {
+                    toolbar.hideWithAnimation()?.addListener(object : Animator.AnimatorListener {
                         override fun onAnimationRepeat(animation: Animator?) {
 
                         }
@@ -90,7 +138,65 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.favorite_id -> {
 
-                    toolbar.hide().addListener(object : Animator.AnimatorListener {
+                    val intent = Intent(this, FavoriteActivity::class.java)
+                    val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(this)
+                        .toBundle()
+
+                    startActivityForResult(intent, Companion.REQUEST_RESULT, bundle)
+                }
+            }
+
+            toolbar_layout.collapsedTitleGravity = Gravity.CENTER
+            toolbar_layout.expandedTitleGravity = Gravity.CENTER
+
+            return@setOnNavigationItemSelectedListener true
+        }
+
+        mFragmentAdapter = FragmentAdapter(supportFragmentManager)
+        mFragmentAdapter.fragments.addAll(
+            mutableListOf(
+                HomeFragment.newInstance(),
+                SearchFragment.newInstance(),
+                GenreFragment.newInstance()
+            )
+        )
+
+        viewpager.offscreenPageLimit = 3
+        viewpager.adapter = mFragmentAdapter
+
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+            hideSystemUI()
+        } else {
+            showSystemUI()
+        }
+
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            getSharedPreferences("Try", Context.MODE_PRIVATE)
+                .edit()
+                .putString("error", throwable.message)
+                .apply()
+        }
+
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        return when (item.itemId) {
+            R.id.action_settings -> true
+            android.R.id.home -> {
+                val chieldFM = mFragmentAdapter.fragments[0].childFragmentManager
+                val fragment = chieldFM.findFragmentById(R.id.container_main)
+                if (fragment != null && viewpager.currentItem == 0
+                ) {
+                    toolbar_layout.title = getString(R.string.app_name)
+//                    supportFragmentManager.beginTransaction().remove(fragment).commit()
+                    chieldFM.popBackStack()
+                    toolbar.hideWithAnimation()?.addListener(object : Animator.AnimatorListener {
                         override fun onAnimationRepeat(animation: Animator?) {
 
                         }
@@ -108,62 +214,28 @@ class MainActivity : AppCompatActivity() {
                         }
 
                     })
+                } else {
+                    toolbar_layout.title = "Gêneros"
+                    mFragmentAdapter.fragments[2].childFragmentManager.popBackStack()
+                    toolbar.hideWithAnimation()?.addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
 
-                    search_view.visibility = SearchView.GONE
-                    toolbar_layout.title = "Favoritos"
-//                    title = "Favoritos"
-                    viewpager.currentItem = 2
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+
+                        }
+
+                    })
                 }
-            }
-
-            toolbar_layout.collapsedTitleGravity = Gravity.CENTER
-            toolbar_layout.expandedTitleGravity = Gravity.CENTER
-
-            return@setOnNavigationItemSelectedListener true
-        }
-
-        mFragmentAdapter = FragmentAdapter(supportFragmentManager)
-        mFragmentAdapter.fragments.addAll(
-            mutableListOf(
-                HomeFragment.newInstance(),
-                SearchFragment.newInstance(),
-                FavoriteFragment.newInstance()
-            )
-        )
-
-        viewpager.offscreenPageLimit = 3
-        viewpager.adapter = mFragmentAdapter
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            android.R.id.home -> {
-                toolbar_layout.title = getString(R.string.app_name)
-                supportFragmentManager.popBackStack()
-                toolbar.hide().addListener(object : Animator.AnimatorListener {
-                    override fun onAnimationRepeat(animation: Animator?) {
-
-                    }
-
-                    override fun onAnimationEnd(animation: Animator?) {
-                        supportActionBar?.setDisplayHomeAsUpEnabled(false)
-                    }
-
-                    override fun onAnimationCancel(animation: Animator?) {
-
-                    }
-
-                    override fun onAnimationStart(animation: Animator?) {
-
-                    }
-
-                })
 
                 return true
             }
@@ -172,14 +244,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if ((supportFragmentManager.findFragmentById(R.id.container_main) !is EpisodesFragment || supportFragmentManager.findFragmentById(
+
+        (supportFragmentManager.findFragmentById(android.R.id.content) as PlayFragment?)?.apply {
+            if (!isFullScreen) {
+                supportFragmentManager.popBackStack()
+                return
+            }
+        }
+
+        val chieldFM = mFragmentAdapter.fragments[0].childFragmentManager
+        if ((chieldFM.findFragmentById(R.id.container_main) !is EpisodesFragment || chieldFM.findFragmentById(
                 R.id.container_main
             ) !is CalendarFragment) &&
             viewpager.currentItem == 0
         ) {
             toolbar_layout.title = getString(R.string.app_name)
             title = getString(R.string.app_name)
-            toolbar.hide().addListener(object : Animator.AnimatorListener {
+            toolbar.hideWithAnimation()?.addListener(object : Animator.AnimatorListener {
                 override fun onAnimationRepeat(animation: Animator?) {
 
                 }
@@ -200,7 +281,7 @@ class MainActivity : AppCompatActivity() {
 
             super.onBackPressed()
 
-        } else if ((supportFragmentManager.findFragmentById(R.id.container_main) !is EpisodesFragment || supportFragmentManager.findFragmentById(
+        } else if ((chieldFM.findFragmentById(R.id.container_main) !is EpisodesFragment || chieldFM.findFragmentById(
                 R.id.container_main
             ) !is CalendarFragment)
             && viewpager.currentItem > 0
@@ -208,7 +289,7 @@ class MainActivity : AppCompatActivity() {
 
             bottomview.selectedItemId = R.id.home_id
 //            viewpager.currentItem = 0
-        } else if ((supportFragmentManager.findFragmentById(R.id.container_main) is EpisodesFragment || supportFragmentManager.findFragmentById(
+        } else if ((chieldFM.findFragmentById(R.id.container_main) is EpisodesFragment || chieldFM.findFragmentById(
                 R.id.container_main
             ) is CalendarFragment) &&
             viewpager.currentItem > 0
@@ -216,6 +297,24 @@ class MainActivity : AppCompatActivity() {
             bottomview.selectedItemId = R.id.home_id
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_RESULT) {
+            bottomview.selectedItemId = when (viewpager.currentItem) {
+                0 -> {
+                    R.id.home_id
+                }
+                1 -> {
+                    R.id.search_id
+                }
+                else -> {
+                    R.id.list_id
+                }
+            }
         }
     }
 
@@ -246,6 +345,10 @@ class MainActivity : AppCompatActivity() {
             view = View(this)
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0)
+    }
+
+    companion object {
+        const val REQUEST_RESULT: Int = 32
     }
 
 }

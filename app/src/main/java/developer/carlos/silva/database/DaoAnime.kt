@@ -13,11 +13,17 @@ interface DaoAnime {
     @Query("SELECT * FROM DataAnime ORDER BY dateTime DESC")
     fun getAll(): MutableList<AnimeAndEpisodes>
 
+    @Query("SELECT * FROM DataAnime WHERE notifyMe = 1")
+    fun getAllByNotificationFlag(): MutableList<AnimeAndEpisodes>
+
     @Insert (onConflict = OnConflictStrategy.REPLACE)
     fun insertAnime(vararg dataAnime: DataAnime)
 
     @Insert (onConflict = OnConflictStrategy.REPLACE)
-    fun insertEpisode(episode: List<DataEpisode>)
+    fun insertEpisodes(episode: List<DataEpisode>)
+
+    @Insert (onConflict = OnConflictStrategy.REPLACE)
+    fun insertEpisode(episode: DataEpisode)
 
     @Query("SELECT * FROM DataAnime WHERE id = :id")
     fun isExist(id: Int): DataAnime?

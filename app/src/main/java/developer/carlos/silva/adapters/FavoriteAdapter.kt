@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
+import developer.carlos.silva.activities.FavoriteActivity
 import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.database.models.AnimeAndEpisodes
 import developer.carlos.silva.models.Anime
@@ -28,7 +29,7 @@ import developer.carlos.silva.database.models.DataAnime
 class FavoriteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var items = mutableListOf<AnimeAndEpisodes>()
-    lateinit var mActivity: MainActivity
+    lateinit var mActivity: FavoriteActivity
     fun addItems(items: MutableList<AnimeAndEpisodes>) {
         this.items.clear()
         this.items.addAll(items)
@@ -67,16 +68,16 @@ class FavoriteAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
                         holder.image.setImageBitmap(resource)
 
-                        if (holder.itemView.visibility == CardView.GONE) {
-                            val animation = AnimationUtils.loadAnimation(
-                                holder.itemView.context,
-                                R.anim.transition_down_to_up
-                            )
-                            animation.interpolator = AccelerateDecelerateInterpolator()
-                            animation.duration = 700
-                            holder.itemView.startAnimation(animation)
-                            holder.itemView.visibility = LinearLayout.VISIBLE
-                        }
+//                        if (holder.itemView.visibility == CardView.GONE) {
+//                            val animation = AnimationUtils.loadAnimation(
+//                                holder.itemView.context,
+//                                R.anim.transition_down_to_up
+//                            )
+//                            animation.interpolator = AccelerateDecelerateInterpolator()
+//                            animation.duration = 700
+//                            holder.itemView.startAnimation(animation)
+//                        }
+                        holder.itemView.visibility = LinearLayout.VISIBLE
                     }
 
                 })

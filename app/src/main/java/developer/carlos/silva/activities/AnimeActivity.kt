@@ -2,6 +2,7 @@ package developer.carlos.silva.activities
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.PorterDuff
 import android.os.Bundle
@@ -9,16 +10,16 @@ import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
-import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.palette.graphics.Palette
 
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.transition.ChangeBounds
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.view.setPadding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.gson.Gson
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import developer.carlos.silva.R
@@ -26,15 +27,16 @@ import developer.carlos.silva.adapters.EpisodeAdapter
 import developer.carlos.silva.database.DatabaseServices
 import developer.carlos.silva.database.models.AnimeAndEpisodes
 import developer.carlos.silva.database.models.DataAnime
-import developer.carlos.silva.extensions.addAnim
-import developer.carlos.silva.extensions.removeAnim
+import developer.carlos.silva.extensions.hideSystemUI
+import developer.carlos.silva.extensions.showSystemUI
 import developer.carlos.silva.interfaces.AnimeLoaderListener
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.network.LoaderAnimes
 import developer.carlos.silva.singletons.MainController
+import developer.carlos.silva.utils.Utils
 import kotlinx.android.synthetic.main.activity_anime.*
-import kotlinx.android.synthetic.main.content_anime.*
 import kotlinx.android.synthetic.main.content_anime.recyclerview
+import kotlinx.android.synthetic.main.fab_expand_layout.view.*
 import java.lang.Exception
 
 
@@ -44,6 +46,7 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
     private lateinit var mSharedPreferences: SharedPreferences
     var isLink = false
     private var dataAnime: DataAnime? = null
+    var defaultHeightAppBar = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +55,14 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportPostponeEnterTransition()
         commomInit()
+
+
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+            hideSystemUI()
+        }else {
+            showSystemUI()
+        }
+
     }
 
     fun finishTransition () {
@@ -103,10 +114,11 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
 
                     if (daoAnime.isExist(dataAnime!!.id) == null) {
                         dataAnime!!.isWatch = fab.isWatching
+                        dataAnime!!.notifyMe = fab.notifyMe
                         dataAnime!!.title = data.title
                         dataAnime!!.link = data.link
                         daoAnime.insertAnime(dataAnime!!)
-                        daoAnime.insertEpisode(dataAnime!!.lista)
+                        daoAnime.insertEpisodes(dataAnime!!.lista)
                         MainController.getInstance()?.getHandler()?.post {
                             fab.isAdded = true
                         }
@@ -154,8 +166,9 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
 
                     if (daoAnime.isExist(dataAnime!!.id) == null) {
                         dataAnime!!.isWatch = fab.isWatching
+                        dataAnime!!.notifyMe = fab.notifyMe
                         daoAnime.insertAnime(dataAnime!!)
-                        daoAnime.insertEpisode(data.epsodes)
+                        daoAnime.insertEpisodes(data.epsodes)
                         MainController.getInstance()?.getHandler()?.post {
                             val changeBounds = ChangeBounds()
                             window.sharedElementReturnTransition = changeBounds
@@ -185,18 +198,17 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
             }
             mAdapter.addItems(eps.toMutableList())
 
-            progressbar.visibility = ProgressBar.GONE
-            recyclerview.visibility = RecyclerView.VISIBLE
-
             isCheckAdded()
 
         }
 
         fab.setOnAddClickListener(listener)
         fab.onClickListener(View.OnClickListener {
+            fab.checkbox.isChecked = false
             isCheckAdded()
         })
         mAdapter.RGB_COLOR_TEXT = ContextCompat.getColor(this, android.R.color.holo_red_dark)
+        defaultHeightAppBar = app_bar.layoutParams.height
     }
 
     private fun isCheckAdded() {
@@ -327,10 +339,24 @@ class AnimeActivity : AppCompatActivity(), AnimeLoaderListener {
                 })
         }
 
+        dataAnime?.infos?.forEach { i ->
+            infos.addView(TextView(this@AnimeActivity).apply {
+                val margin = Utils.dpToPx(8f, resources).toInt()
+                val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT)
+                setPadding(Utils.dpToPx(15f, resources).toInt())
+                params.setMargins(margin, 0, margin, margin)
+                text = i
+                textSize = 16f
+                setTextAppearance(android.R.style.TextAppearance_StatusBar_Title)
+                layoutParams = params
+                background = ContextCompat.getDrawable(this@AnimeActivity, R.drawable.tag_background)
+                setTextColor(ContextCompat.getColor(this@AnimeActivity, android.R.color.white))
+            })
+        }
+
         mAdapter.addItems(dataAnime!!.lista.toMutableList())
 
-        progressbar.visibility = ProgressBar.GONE
-        recyclerview.visibility = RecyclerView.VISIBLE
     }
 
     fun saveSets(id: String) {

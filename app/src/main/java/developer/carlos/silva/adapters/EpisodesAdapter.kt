@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.ChangeBounds
 import androidx.transition.Slide
@@ -27,6 +28,7 @@ import developer.carlos.silva.R
 import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.dialogs.LoadDialog
 import developer.carlos.silva.fragments.EpisodesFragment
+import developer.carlos.silva.fragments.PlayFragment
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.models.Player
 import developer.carlos.silva.singletons.MainController
@@ -65,7 +67,7 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
                 (mEpisodesFragment.activity as MainActivity).saveSets(anime.videoId.toString())
 
-                LoadDialog.show(mEpisodesFragment.fragmentManager!!)
+                LoadDialog.show(mEpisodesFragment.activity!!.supportFragmentManager)
 
                 Thread {
                     try {
@@ -79,25 +81,61 @@ class EpisodesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         )
 
                         MainController.getInstance()?.getHandler()?.post {
-                            val dialog = AlertDialog.Builder(mEpisodesFragment.context!!, R.style.AppTheme_Dialog)
+                            val dialog = AlertDialog.Builder(
+                                mEpisodesFragment.context!!,
+                                R.style.AppTheme_Dialog
+                            )
                                 .setTitle(anime.title)
                                 .setNeutralButton(android.R.string.ok) { dialogInterface, i ->
                                     dialogInterface.dismiss()
                                 }
                                 .setItems(result.map { it.label }
-                                    .toTypedArray()) { _, i ->
-                                    val intent = Intent(Intent.ACTION_VIEW)
-                                    intent.setDataAndType(
-                                        Uri.parse(result[i].file),
-                                        result[i].type
-                                    )
-                                    mEpisodesFragment.context!!.startActivity(intent)
-                                }.setOnDismissListener {
+                                    .toTypedArray()) { dialogInterface, i ->
 
+                                    AlertDialog.Builder(
+                                        mEpisodesFragment.context!!,
+                                        R.style.AppTheme_Dialog
+                                    ).setTitle("Opções de Player")
+                                        .setItems(
+                                            arrayOf(
+                                                "Principal",
+                                                "Externo",
+                                                "Download - TRABALHANDO"
+                                            )
+                                        ) { dialogInterface, j ->
+                                            if (j == 0) {
+                                                val fragmentManager =
+                                                    mEpisodesFragment.activity?.supportFragmentManager
+                                                fragmentManager
+                                                    ?.beginTransaction()
+                                                    ?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                    ?.replace(
+                                                        android.R.id.content,
+                                                        PlayFragment.newInstance(
+                                                            result[i].file,
+                                                            result[i].type
+                                                        )
+                                                    )
+                                                    ?.addToBackStack(null)
+                                                    ?.commit()
+                                            } else if(j == 1) {
+                                                val intent =
+                                                    Intent(Intent.ACTION_VIEW)
+                                                intent.setDataAndType(
+                                                    Uri.parse(
+                                                        result[i].file
+                                                    ),   result[i].type
+                                                )
+                                                mEpisodesFragment.context?.startActivity(intent)
+                                            }
+                                        }.show()
+
+                                }.setOnDismissListener {
+                                    LoadDialog.hide(mEpisodesFragment.activity!!.supportFragmentManager)
                                 }.create()
 
                             dialog.setOnShowListener {
-                                LoadDialog.hide(mEpisodesFragment.fragmentManager!!)
+                                LoadDialog.hide(mEpisodesFragment.activity!!.supportFragmentManager)
                             }
 
                             dialog.show()

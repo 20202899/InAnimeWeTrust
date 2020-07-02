@@ -6,7 +6,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:windowBackground">@drawable/background_gradient</item>
         <item name="fontFamily">@font/chelseamarket_regular</item>
         <item name="android:navigationBarColor">@color/colorPrimary</item>
         <item name="android:windowContentTransitions">true</item>
@@ -34,8 +34,8 @@
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="backgroundColor">@color/colorPrimary</item>
-        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="backgroundColor">@color/colorNewAccent</item>
+        <item name="colorPrimary">@android:color/white</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 

@@ -1,28 +1,22 @@
 package developer.carlos.silva.fragments
 
 import android.os.Bundle
-import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionManager
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.MainActivity
 import developer.carlos.silva.adapters.EpisodesAdapter
-import developer.carlos.silva.extensions.show
 import developer.carlos.silva.interfaces.AnimeLoaderListener
 import developer.carlos.silva.interfaces.EndlessRecyclerViewScrollListener
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.network.LoaderAnimes
 import developer.carlos.silva.network.UrlSystem
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.episodes_fragment.*
 import kotlinx.android.synthetic.main.episodes_fragment.recyclerview
-import kotlinx.android.synthetic.main.home_frament.*
 
 class EpisodesFragment : Fragment() {
 
@@ -73,7 +67,7 @@ class EpisodesFragment : Fragment() {
 
         mainActivity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         mainActivity.toolbar_layout.title = "Disponível"
-        mainActivity.toolbar.show()
+        mainActivity.toolbar.showWithAnimation()
 
         recyclerview.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -100,6 +94,7 @@ class EpisodesFragment : Fragment() {
     }
 
     companion object {
+        const val FRAGMENT_ID = "Episodes"
         fun newInstance() = EpisodesFragment()
     }
 }

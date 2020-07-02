@@ -5,6 +5,8 @@ import developer.carlos.silva.interfaces.AnimeLoaderStringListener
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.database.models.DataAnime
 import developer.carlos.silva.database.models.DataEpisode
+import developer.carlos.silva.interfaces.AnimeLoaderGenreListener
+import developer.carlos.silva.models.Genre
 import developer.carlos.silva.singletons.MainController
 import developer.carlos.silva.utils.Utils
 import org.jsoup.Jsoup
@@ -37,7 +39,7 @@ class LoaderAnimes {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(list)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf())
                     }
@@ -51,6 +53,8 @@ class LoaderAnimes {
                 try {
                     var count = 0
                     val doc = Jsoup.connect(link).get()
+                    val boxAnimeSobreLinhas =
+                        doc.select(".boxAnimeSobreLinha").map { it.text() }
                     val sinopse = doc.select("#sinopse2").first()?.text() ?: ""
                     val capaAnime = doc.select("#capaAnime")
                     val img = capaAnime.select("img")
@@ -71,6 +75,7 @@ class LoaderAnimes {
 
                     val objt = DataAnime()
                     objt.id = videoId
+                    objt.infos.addAll(boxAnimeSobreLinhas)
                     objt.lista = list
                     objt.capa = capaLink
                     objt.sinopse = sinopse
@@ -78,7 +83,7 @@ class LoaderAnimes {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf(objt))
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf())
                     }
@@ -96,7 +101,7 @@ class LoaderAnimes {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(list)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf())
                     }
@@ -114,7 +119,7 @@ class LoaderAnimes {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(list)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf())
                     }
@@ -135,7 +140,7 @@ class LoaderAnimes {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(list)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf())
                     }
@@ -157,7 +162,7 @@ class LoaderAnimes {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(list)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf())
                     }
@@ -192,7 +197,7 @@ class LoaderAnimes {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(list)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     MainController.getInstance()?.getHandler()?.post {
                         animeLoaderListener?.onLoad(mutableListOf())
                     }
@@ -200,14 +205,43 @@ class LoaderAnimes {
             }.start()
         }
 
-        fun loadCapa(animeLoaderStringListener: AnimeLoaderStringListener?, url: String) {
-            val doc = Jsoup.connect(url).get()
-            val capaAnime = doc.select("#capaAnime")
-            val img = capaAnime.select("img")
-            val result = img.attr("src").toString()
+        fun loadGenres(animeLoaderGenreListener: AnimeLoaderGenreListener?) {
             Thread {
+                val doc = Jsoup.connect(UrlSystem.genres()).get()
+                val generosPagContainer = doc.select(".generosPagContainer")
+                val aElement = generosPagContainer.select("a")
+                val result = aElement
+                    .map { Genre(it.text(), it.attr("href")) }
+                    .toMutableList()
+
                 MainController.getInstance()?.getHandler()?.post {
-                    animeLoaderStringListener?.onLoad(result)
+                    animeLoaderGenreListener?.onLoad(result)
+                }
+
+            }.start()
+        }
+
+        fun loadAnimesByGenre(
+            animeLoaderListener: AnimeLoaderListener?,
+            url: String = UrlSystem.episodes()
+        ) {
+            Thread {
+                try {
+                    val doc = Jsoup.connect(url).get()
+                    val searchPagContainer = doc.select(".searchPagContainer")
+                    val centerPagination = doc.select(".centerPagination")
+                    val epiSubContainer = centerPagination.select(".paginacao")
+                        .select("a")
+                    val animes = searchPagContainer.select(".aniItem")
+                        .map { Anime(it) }.toMutableList<Any>()
+                    val paginas = epiSubContainer.map { Anime(it) }.toMutableList<Any>()
+                    MainController.getInstance()?.getHandler()?.post {
+                        animeLoaderListener?.onLoad(mutableListOf(animes, paginas))
+                    }
+                } catch (e: Exception) {
+                    MainController.getInstance()?.getHandler()?.post {
+                        animeLoaderListener?.onLoad(mutableListOf())
+                    }
                 }
             }.start()
         }

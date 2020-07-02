@@ -1,0 +1,8 @@
+<com.google.android.exoplayer2.ui.PlayerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:use_controller="true"
+    android:id="@+id/videoViewContainer"
+    app:resize_mode="fill"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />

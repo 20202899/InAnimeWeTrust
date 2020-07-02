@@ -2,6 +2,8 @@
 <resources>
     <color name="colorPrimary">#0a0a19</color>
     <color name="colorPrimaryDark">#0a0a19</color>
+    <color name="colorNewPrimary">#0e0e29</color>
+    <color name="colorNewAccent">#101033</color>
     <color name="colorAccent">#87f5f5</color>
     <color name="colorMirror">#88000000</color>
 </resources>

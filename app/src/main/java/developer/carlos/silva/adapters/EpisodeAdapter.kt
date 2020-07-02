@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.ImageView
@@ -15,8 +16,13 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.ChangeBounds
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -33,6 +39,7 @@ import developer.carlos.silva.activities.AnimeActivity
 import developer.carlos.silva.database.models.DataAnime
 import developer.carlos.silva.database.models.DataEpisode
 import developer.carlos.silva.dialogs.LoadDialog
+import developer.carlos.silva.fragments.PlayFragment
 import developer.carlos.silva.models.Player
 import developer.carlos.silva.singletons.MainController
 import developer.carlos.silva.utils.Utils
@@ -88,7 +95,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             if (!isContinue) {
                 if (isContinue()) {
                     mActivity.start_watch?.background =
-                        ContextCompat.getDrawable(mActivity, R.drawable.start_watch_selected)
+                        ContextCompat.getDrawable(mActivity, R.color.colorNewAccent)
                     mActivity.start_watch?.text = "Continuar"
 
                     mActivity.start_watch?.startAnimation(
@@ -103,12 +110,13 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
 
             if (mActivity.getIds().contains(anime.id)) {
-                holder.itemView.background = ContextCompat.getDrawable(mActivity, R.drawable.start_watch_selected)
+                holder.itemView.background =
+                    ContextCompat.getDrawable(mActivity, R.color.colorNewAccent)
             } else {
-                holder.itemView.setBackgroundColor(ContextCompat.getColor(
+                holder.itemView.background = ContextCompat.getDrawable(
                     mActivity,
-                    R.color.colorPrimary
-                ))
+                    R.drawable.background_gradient
+                )
             }
 
 //            if (position > lastIndexAnimation) {
@@ -130,7 +138,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
                 if (!isContinue && mActivity.start_watch.visibility == Button.GONE) {
                     mActivity.start_watch.background =
-                        ContextCompat.getDrawable(mActivity, R.drawable.start_watch_selected)
+                        ContextCompat.getDrawable(mActivity, R.color.colorNewAccent)
                     mActivity.start_watch.text = "Continuar"
 
                     mActivity.start_watch.startAnimation(
@@ -143,7 +151,8 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
                 mActivity.saveSets(anime.id.toString())
 
-                holder.itemView.background = ContextCompat.getDrawable(mActivity, R.drawable.start_watch_selected)
+                holder.itemView.background =
+                    ContextCompat.getDrawable(mActivity, R.color.colorNewAccent)
 
                 LoadDialog.show(mActivity.supportFragmentManager)
 
@@ -164,12 +173,43 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                             }
                             .setItems(result.map { it.label }
                                 .toTypedArray()) { dialogInterface, i ->
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.setDataAndType(
-                                    Uri.parse(result[i].file),
-                                    result[i].type
-                                )
-                                mActivity.startActivity(intent)
+
+                                AlertDialog.Builder(
+                                    mActivity,
+                                    R.style.AppTheme_Dialog
+                                ).setTitle("Opções de Player")
+                                    .setItems(
+                                        arrayOf(
+                                            "Principal",
+                                            "Externo",
+                                            "Download - TRABALHANDO"
+                                        )
+                                    ) { dialogInterface, j ->
+                                        if (j == 0) {
+                                            val fragmentManager =
+                                                mActivity.supportFragmentManager
+                                            fragmentManager
+                                                .beginTransaction()
+                                                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                .replace(
+                                                    android.R.id.content,
+                                                    PlayFragment.newInstance(
+                                                        result[i].file,
+                                                        result[i].type
+                                                    )
+                                                ).addToBackStack(null)
+                                                .commit()
+                                        } else if(j == 1) {
+                                            val intent =
+                                                Intent(Intent.ACTION_VIEW)
+                                            intent.setDataAndType(
+                                                Uri.parse(
+                                                    result[i].file
+                                                ),   result[i].type
+                                            )
+                                            mActivity.startActivity(intent)
+                                        }
+                                    }.show()
                             }.setOnDismissListener {
                                 LoadDialog.hide(mActivity.supportFragmentManager)
                             }.create()
@@ -251,7 +291,7 @@ class EpisodeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         }.start()
     }
 
-    fun isContinue (): Boolean {
+    fun isContinue(): Boolean {
         val ids = mActivity.getIds()
         val saveIds = mutableListOf<DataEpisode>()
         items.forEach {

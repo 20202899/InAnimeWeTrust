@@ -14,6 +14,7 @@ class DataAnime : Serializable {
     var link: String = ""
     var title: String = ""
     var isWatch = false
+    var notifyMe = false
     var dateTime: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         LocalDateTime.now().toString()
     }else {
@@ -26,5 +27,7 @@ class DataAnime : Serializable {
     var capa: String = ""
     @Ignore
     lateinit var lista: MutableList<DataEpisode>
+    @Ignore
+    var infos = mutableListOf<String>()
     var sinopse: String = ""
 }

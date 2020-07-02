@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import developer.carlos.silva.R
 import developer.carlos.silva.adapters.CalendarAdapter
 import developer.carlos.silva.activities.MainActivity
-import developer.carlos.silva.extensions.show
 import developer.carlos.silva.interfaces.AnimeLoaderListener
 import developer.carlos.silva.network.LoaderAnimes
 import kotlinx.android.synthetic.main.activity_main.*
@@ -54,7 +53,7 @@ class CalendarFragment : Fragment() {
 
         mainActivity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         mainActivity.toolbar_layout.title = "Calendário"
-        mainActivity.toolbar.show()
+        mainActivity.toolbar.showWithAnimation()
 
         recyclerview.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -76,6 +75,7 @@ class CalendarFragment : Fragment() {
     }
 
     companion object {
+        const val FRAGMENT_ID = "Calendar"
         fun newInstance() = CalendarFragment()
     }
 }

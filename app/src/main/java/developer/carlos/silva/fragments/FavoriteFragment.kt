@@ -6,20 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import developer.carlos.silva.R
-import developer.carlos.silva.activities.MainActivity
+import developer.carlos.silva.activities.FavoriteActivity
 import developer.carlos.silva.adapters.FavoriteAdapter
 import developer.carlos.silva.database.DatabaseServices
-import developer.carlos.silva.database.models.DataAnime
 import developer.carlos.silva.singletons.MainController
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.favorite_fragment.recyclerview
 
 class FavoriteFragment : Fragment() {
@@ -46,21 +39,21 @@ class FavoriteFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val mainActivity = activity as MainActivity
-        mAdapter.mActivity = mainActivity
+        val favoriteActivity = activity as FavoriteActivity
+        mAdapter.mActivity = favoriteActivity
 //        val dividerItemDecoration = DividerItemDecoration(context!!, DividerItemDecoration.VERTICAL)
         mSharedPreferences = activity!!.getSharedPreferences("Sets", Context.MODE_PRIVATE)
 
-        recyclerview.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0 && mainActivity.bottomview.isShowing()) {
-                    mainActivity.bottomview.hide()
-                }else if(dy <= 0 && !mainActivity.bottomview.isShowing()) {
-                    mainActivity.bottomview.show()
-                }
-            }
-        })
+//        recyclerview.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+//                super.onScrolled(recyclerView, dx, dy)
+//                if (dy > 0 && mainActivity.bottomview.isShowing()) {
+//                    mainActivity.bottomview.hide()
+//                }else if(dy <= 0 && !mainActivity.bottomview.isShowing()) {
+//                    mainActivity.bottomview.show()
+//                }
+//            }
+//        })
 
         recyclerview.setHasFixedSize(true)
         recyclerview.layoutManager = LinearLayoutManager(

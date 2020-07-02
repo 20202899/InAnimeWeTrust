@@ -25,7 +25,7 @@ class LoadDialog : DialogFragment() {
             val transaction = fragmentManager.beginTransaction()
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
             transaction
-                .add(android.R.id.content, LoadDialog.newInstance())
+                .replace(android.R.id.content, newInstance())
                 .addToBackStack(null)
                 .commit()
 

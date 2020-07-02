@@ -1,0 +1,52 @@
+<developer.carlos.silva.views.CustomMotionLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/videoMotionLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="false"
+    android:background="@android:color/transparent"
+    app:layoutDescription="@xml/playr_scene">
+
+    <View
+        android:id="@+id/viewBackground"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="@id/videoViewContainer"
+        app:layout_constraintStart_toStartOf="@id/videoViewContainer"
+        app:layout_constraintEnd_toEndOf="@id/button"
+        app:layout_constraintBottom_toBottomOf="@id/recyclerView"/>
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        app:use_controller="false"
+        android:id="@+id/videoViewContainer"
+        app:resize_mode="fill"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="16:9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+         />
+
+    <ImageView
+        android:id="@+id/button"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:tint="@android:color/darker_gray"
+        app:layout_constraintBottom_toBottomOf="@+id/videoViewContainer"
+        app:layout_constraintStart_toEndOf="@+id/videoViewContainer"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:nestedScrollingEnabled="false"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/videoViewContainer" />
+
+</developer.carlos.silva.views.CustomMotionLayout>

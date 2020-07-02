@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_home_24dp"/>
     <item android:title="@string/search_title" android:id="@+id/search_id" app:showAsAction="always"
         android:icon="@drawable/ic_search_24dp"/>
+
+    <item android:title="@string/list_title" android:id="@+id/list_id" app:showAsAction="always"
+        android:icon="@drawable/ic_format_list_bulleted_24dp"/>
+
     <item android:title="@string/favorite_title" android:id="@+id/favorite_id" app:showAsAction="always"
         android:icon="@drawable/ic_star_24dp"/>
 </menu>

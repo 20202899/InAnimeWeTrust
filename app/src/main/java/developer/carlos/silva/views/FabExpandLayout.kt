@@ -1,6 +1,11 @@
 package developer.carlos.silva.views
 
+import android.app.Activity
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.content.Context
+import android.net.NetworkRequest
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
@@ -16,6 +21,7 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import developer.carlos.silva.R
 import developer.carlos.silva.activities.AnimeActivity
+import developer.carlos.silva.services.AnimeNewEpisodeJobService
 import kotlinx.android.synthetic.main.activity_anime.*
 import kotlinx.android.synthetic.main.fab_expand_layout.view.*
 import kotlinx.android.synthetic.main.fab_expand_layout.view.img
@@ -39,6 +45,7 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
 
     var title = ""
     var isWatching = false
+    var notifyMe = false
 
     constructor(context: Context?) : super(context)
 
@@ -50,11 +57,6 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
         initView()
 
         Log.DEBUG
-    }
-
-    private fun initView() {
-        LayoutInflater.from(context).inflate(R.layout.fab_expand_layout, this)
-        viewTreeObserver.addOnGlobalLayoutListener(this)
     }
 
     constructor(
@@ -74,8 +76,13 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
         Log.DEBUG
     }
 
+    private fun initView() {
+        LayoutInflater.from(context).inflate(R.layout.fab_expand_layout, this)
+        viewTreeObserver.addOnGlobalLayoutListener(this)
+    }
+
     fun onClickListener(onClickListener: OnClickListener?) {
-        setOnClickListener {
+        img.setOnClickListener {
 
             showDialogExpand()
 
@@ -105,7 +112,7 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
         this.layoutParams = params
         changeBounds.addListener(object : Transition.TransitionListener {
             override fun onTransitionEnd(transition: Transition) {
-                background = ContextCompat.getDrawable(context, android.R.color.transparent)
+                background = ContextCompat.getDrawable(context, R.drawable.fab_expand_background)
                 inAnimation = false
                 isExpanded = false
             }
@@ -154,14 +161,20 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
             return
         }
 
-        mActivity.main_container.addView(View(context).apply {
-            background = context.getDrawable(android.R.color.black)
-            alpha = 0.7f
-            id = android.R.id.edit
-            isEnabled = true
-            requestFocus()
-            isClickable = true
-        }, CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT))
+        mActivity.main_container.addView(
+            View(context).apply {
+                background = context.getDrawable(android.R.color.black)
+                alpha = 0.7f
+                id = android.R.id.edit
+                isEnabled = true
+                requestFocus()
+                isClickable = true
+            },
+            CoordinatorLayout.LayoutParams(
+                CoordinatorLayout.LayoutParams.MATCH_PARENT,
+                CoordinatorLayout.LayoutParams.MATCH_PARENT
+            )
+        )
 
         inAnimation = true
 
@@ -171,7 +184,7 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
 
         add.text = if (isAdded) {
             "REMOVER"
-        }else {
+        } else {
             "ADD"
         }
 
@@ -180,7 +193,7 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
                 val params = this@FabExpandLayout.layoutParams as CoordinatorLayout.LayoutParams
                 val newChangeBounds = ChangeBounds()
                 params.width = CoordinatorLayout.LayoutParams.MATCH_PARENT
-                params.height = 600
+                params.height = CoordinatorLayout.LayoutParams.WRAP_CONTENT
                 this@FabExpandLayout.layoutParams = params
                 background = ContextCompat.getDrawable(context, R.drawable.fab_unexpand_background)
 
@@ -263,6 +276,25 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
         )
     }
 
+    private fun addJobService() {
+        val jobScheduler =
+            mActivity.getSystemService(Activity.JOB_SCHEDULER_SERVICE) as JobScheduler
+
+        if (!jobScheduler.allPendingJobs.map { it.id }.contains(AnimeNewEpisodeJobService.JOB_SERVICE_NEW_EP_ID)) {
+            jobScheduler.schedule(
+                JobInfo.Builder(
+                    AnimeNewEpisodeJobService.JOB_SERVICE_NEW_EP_ID,
+                    ComponentName(mActivity, AnimeNewEpisodeJobService::class.java)
+                ).apply {
+                    setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    setRequiresDeviceIdle(false)
+                    setPersisted(true)
+                    setPeriodic(1800000 , 1800000)
+                }.build()
+            )
+        }
+    }
+
     override fun onGlobalLayout() {
         val params = img.layoutParams
         defaultParams = params
@@ -270,10 +302,11 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
         text1.text = title
 
         add.setOnClickListener {
-            isWatching = checkbox.isChecked
+            notifyMe = this.checkbox.isChecked
             if (!isAdded) {
+                addJobService()
                 removeAnim()
-            }else {
+            } else {
                 addAnim()
             }
             hideDialogExpand()
@@ -300,8 +333,11 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
 
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 if (p2 == 0) {
+                    isWatching = true
                     checkbox.visibility = CheckBox.VISIBLE
                 } else {
+                    isWatching = false
+                    checkbox.isChecked = false
                     checkbox.startAnimation(
                         AnimationUtils.loadAnimation(
                             context,
@@ -318,7 +354,7 @@ class FabExpandLayout : FrameLayout, ViewTreeObserver.OnGlobalLayoutListener {
             override fun handleOnBackPressed() {
                 if (isExpanded) {
                     hideDialogExpand()
-                }else {
+                } else {
                     mActivity.finishAfterTransition()
                 }
             }

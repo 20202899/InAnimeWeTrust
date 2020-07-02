@@ -3,29 +3,24 @@ package developer.carlos.silva.adapters
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AnimationUtils
-import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityManagerCompat
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.*
+import androidx.transition.ChangeScroll
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.request.RequestOptions
@@ -39,13 +34,13 @@ import developer.carlos.silva.dialogs.LoadDialog
 import developer.carlos.silva.fragments.CalendarFragment
 import developer.carlos.silva.fragments.EpisodesFragment
 import developer.carlos.silva.fragments.HomeFragment
+import developer.carlos.silva.fragments.PlayFragment
 import developer.carlos.silva.models.Anime
 import developer.carlos.silva.models.Player
 import developer.carlos.silva.singletons.MainController
 import developer.carlos.silva.utils.Utils
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jsoup.Jsoup
-import java.lang.Exception
 import java.util.*
 
 
@@ -189,27 +184,32 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
             if (position == 4) {
                 holder.textView2.setOnClickListener {
-                    (mHomeFragment?.activity as MainActivity?)
-                        ?.app_bar?.setExpanded(true, true)
-                    val transaction = mHomeFragment?.fragmentManager!!.beginTransaction()
-                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    transaction
-                        .add(R.id.container_main, EpisodesFragment.newInstance())
-                        .addToBackStack(null)
-                        .commit()
+                                       (mHomeFragment?.activity as MainActivity?)?.apply {
+                        app_bar.setExpanded(true, true)
+                        val childFM = mFragmentAdapter.fragments[0].childFragmentManager
+                        val transaction = childFM.beginTransaction()
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                        transaction
+                            .add(R.id.container_main, EpisodesFragment.newInstance(), EpisodesFragment.FRAGMENT_ID)
+                            .addToBackStack(null)
+                            .commit()
+                    }
+
                 }
             }
 
             if (position == 6) {
                 holder.textView2.setOnClickListener {
-                    (mHomeFragment?.activity as MainActivity?)
-                        ?.app_bar?.setExpanded(true, true)
-                    val transaction = mHomeFragment?.fragmentManager!!.beginTransaction()
-                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    transaction
-                        .add(R.id.container_main, CalendarFragment.newInstance())
-                        .addToBackStack(null)
-                        .commit()
+                    (mHomeFragment?.activity as MainActivity?)?.apply {
+                        app_bar.setExpanded(true, true)
+                        val childFM = mFragmentAdapter.fragments[0].childFragmentManager
+                        val transaction = childFM.beginTransaction()
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                        transaction
+                            .add(R.id.container_main, CalendarFragment.newInstance(), CalendarFragment.FRAGMENT_ID)
+                            .addToBackStack(null)
+                            .commit()
+                    }
                 }
             }
 
@@ -382,19 +382,55 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                                 )
 
                                 MainController.getInstance()?.getHandler()?.post {
-                                    val dialog = AlertDialog.Builder(mRecyclerView!!.context, R.style.AppTheme_Dialog)
+                                    val dialog = AlertDialog.Builder(
+                                        mRecyclerView!!.context,
+                                        R.style.AppTheme_Dialog
+                                    )
                                         .setTitle(anime.title)
                                         .setNeutralButton(android.R.string.ok) { dialogInterface, i ->
                                             dialogInterface.dismiss()
                                         }
                                         .setItems(result.map { it.label }
                                             .toTypedArray()) { dialogInterface, i ->
-                                            val intent = Intent(Intent.ACTION_VIEW)
-                                            intent.setDataAndType(
-                                                Uri.parse(result[i].file),
-                                                result[i].type
-                                            )
-                                            mRecyclerView!!.context.startActivity(intent)
+
+                                            AlertDialog.Builder(
+                                                mRecyclerView!!.context,
+                                                R.style.AppTheme_Dialog
+                                            ).setTitle("Opções de Player")
+                                                .setItems(
+                                                    arrayOf(
+                                                        "Principal",
+                                                        "Externo",
+                                                        "Download - TRABALHANDO"
+                                                    )
+                                                ) { dialogInterface, j ->
+                                                    if (j == 0) {
+                                                        val fragmentManager =
+                                                            mHomeFragment?.fragmentManager
+                                                        fragmentManager
+                                                            ?.beginTransaction()
+                                                            ?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                            ?.replace(
+                                                                android.R.id.content,
+                                                                PlayFragment.newInstance(
+                                                                    result[i].file,
+                                                                    result[i].type
+                                                                )
+                                                            )
+                                                            ?.addToBackStack(null)
+                                                            ?.commit()
+                                                    } else if(j == 1) {
+                                                        val intent =
+                                                            Intent(Intent.ACTION_VIEW)
+                                                        intent.setDataAndType(
+                                                            Uri.parse(
+                                                                result[i].file
+                                                            ),   result[i].type
+                                                        )
+                                                        mHomeFragment?.context?.startActivity(intent)
+                                                    }
+                                                }.show()
+
                                         }.setOnDismissListener {
                                             LoadDialog.hide(mHomeFragment?.fragmentManager!!)
                                         }.create()
@@ -476,9 +512,11 @@ class HomeRecylerviewAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         val bundle = if (column == 3) {
                             holder.img.transitionName = null
                             ActivityOptionsCompat.makeSceneTransitionAnimation(
-                                activity!!).toBundle()
-                        }else {
-                            holder.img.transitionName = activity?.getString(R.string.transition_name)
+                                activity!!
+                            ).toBundle()
+                        } else {
+                            holder.img.transitionName =
+                                activity?.getString(R.string.transition_name)
                             ActivityOptionsCompat.makeSceneTransitionAnimation(
                                 activity!!,
                                 Pair(holder.itemView, activity.getString(R.string.transition_name))
